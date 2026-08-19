@@ -18,10 +18,10 @@ struct MainView: View {
     
     // URLs cho từng chức năng - bạn cần thay thế bằng URL thực tế
     let featureURLs: [String: String] = [
-        "nhe_tam": "https://yourserver.com/data/nhe_tam.bin",
-        "proxy_body": "https://yourserver.com/data/proxy_body.bin",
-        "proxy_neck": "https://yourserver.com/data/proxy_neck.bin",
-        "proxy_drag": "https://yourserver.com/data/proxy_drag.bin"
+        "nhe_tam": "https://download2297.mediafire.com/y8g6xu8dzm9g1MxwluU4TrcEBuCtTrLsHQV6y7qfvf_syMLA1FlkNTUw-_qzfHAD5GLTMY_jo3xzyfpwBfPmNevT-zoUlCYXX-rt-0ZM3b8gbIp2vi_3pk0WoLelL3X2ystqkHXkpIj5WtxRLGJmrHZqMVv-BTYFp3mhQB56XOVykIw/c95kmzxa0fjd0tz/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "proxy_body": "https://download2391.mediafire.com/ah3lib0uqnugbHDftsXjfJKo5RDRXyL1uf1VOwPv7trlJJoWOFug7pEuir-ddusvN344pDet047Rt1AFiEFTjBB0XoxUe59xhwTjIcbuatFfX8suIUjmjcyCOAIjGCsBpVCNp1ApBC5fj8Rx262sqsErzzhOx44MfK49O_zCESRDfoY/ykc22di703wc51f/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "proxy_neck": "https://download2389.mediafire.com/7kvcg74pn6lgnrV-OCglaJ1RnjSj9VOaNCf2mV7-9H00bNIwP-UjOHBUdOgxq9_HrMNFCk2N7WQvuGOgpCoahA7HElMs1iBEnED55cM37K81Vz9217GyZJbevp4WXfl8YH7XFQ6fg2vOsrluCR8QKUr8cF9AtzyuL4F_XT11VlU-3BU/c5hq8513ewb312s/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "proxy_drag": "https://download2391.mediafire.com/rutwuk3tob0gA_uGxk-8LYfV0Y4sedXSwgzjOY1j7cAQyEYuyCbIrFIyjk_4VKyYeqZ_mqwLZcX63RcYmcZS0-w7L4xb4PSuPXhzIXRvjuRdICAgphoSaFFOm7gEiSv6w--dPtFcRy2ZwqoMMp5zLltZcYlB4THt2XzZEwm6iQRcmbc/7ueocoouf759j22/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D"
     ]
     
     let features: [FeatureItem] = [
