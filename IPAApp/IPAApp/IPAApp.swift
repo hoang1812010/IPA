@@ -1,9 +1,4 @@
-//
-//  IPAAppApp.swift
-//  IPAApp
-//
-//  Created on 2024.
-//
+
 
 import SwiftUI
 
