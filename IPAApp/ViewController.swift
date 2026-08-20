@@ -19,7 +19,6 @@ class ViewController: UIViewController {
         "Khôi Phục": "https://download1085.mediafire.com/qmr4z0kd691gOMdfgkVFam34Dy299HymW70J1Qa1hDMh9VC9Uew4nmWKRXYYowBkvdTSas8J2C764TOECdgMAOTMSR2xbrL6GxvghLyI1C7CMkV0T3MJIezjJrfN-p9D3Jf30XbmkhqiU_ThdJcLgxVcRzK9p4ufluFoGwG4oGevAcU/ugy6x21el8d6w37/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs"
     ]
     
-    // UI Elements
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
     
@@ -30,7 +29,6 @@ class ViewController: UIViewController {
     private var bundleButtons: [UIButton] = []
     private var featureButtons: [UIButton] = []
     
-    // Colors
     private let accentCyan = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
     private let statusGreen = UIColor(red: 0.2, green: 0.78, blue: 0.35, alpha: 1.0)
     private let surfaceColor = UIColor.white.withAlphaComponent(0.03)
@@ -45,10 +43,8 @@ class ViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor(red: 0.02, green: 0.02, blue: 0.03, alpha: 1.0)
         
-        // Console setup
         setupConsole()
         
-        // ScrollView setup
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.showsVerticalScrollIndicator = false
         view.addSubview(scrollView)
@@ -313,7 +309,6 @@ class ViewController: UIViewController {
         button.layer.cornerRadius = 16
         button.layer.borderWidth = 1
         
-        // Store bundleId in accessibilityIdentifier to retrieve it later
         button.accessibilityIdentifier = bundleId
         button.addTarget(self, action: #selector(bundleTapped(_:)), for: .touchUpInside)
         
@@ -327,12 +322,11 @@ class ViewController: UIViewController {
         titleLabel.text = title
         titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
         
-        // Radio button container
         let radioContainer = UIView()
         radioContainer.translatesAutoresizingMaskIntoConstraints = false
         radioContainer.layer.cornerRadius = 11
         radioContainer.layer.borderWidth = 2
-        radioContainer.tag = 100 // Tag for finding later
+        radioContainer.tag = 100
         
         let radioInner = UIView()
         radioInner.translatesAutoresizingMaskIntoConstraints = false
@@ -344,7 +338,6 @@ class ViewController: UIViewController {
         button.addSubview(radioContainer)
         radioContainer.addSubview(radioInner)
         
-        // Add tags for finding labels and imageviews easily later
         titleLabel.tag = 200
         iconView.tag = 300
         
@@ -379,7 +372,7 @@ class ViewController: UIViewController {
         button.layer.borderWidth = 1
         
         button.setTitle(title, for: .normal)
-        button.setTitleColor(.clear, for: .normal) // Hide default title
+        button.setTitleColor(.clear, for: .normal)
         button.addTarget(self, action: #selector(featureTapped(_:)), for: .touchUpInside)
         
         let iconBg = UIView()
@@ -419,12 +412,11 @@ class ViewController: UIViewController {
         button.addSubview(toggleBg)
         toggleBg.addSubview(toggleHandle)
         
-        // Will adjust leading/trailing constraint for handle based on state
         let handleLeading = toggleHandle.leadingAnchor.constraint(equalTo: toggleBg.leadingAnchor, constant: 2)
         handleLeading.identifier = "handleLeading"
         let handleTrailing = toggleHandle.trailingAnchor.constraint(equalTo: toggleBg.trailingAnchor, constant: -2)
         handleTrailing.identifier = "handleTrailing"
-        handleTrailing.isActive = false // default to off
+        handleTrailing.isActive = false
         handleLeading.isActive = true
         
         NSLayoutConstraint.activate([
@@ -465,32 +457,42 @@ class ViewController: UIViewController {
     
     @objc private func featureTapped(_ sender: UIButton) {
         guard !isProcessing else { return }
-        
         guard let title = sender.title(for: .normal) else { return }
         
         if activeFeature == title {
             activeFeature = nil
             updateStatus("Đã tắt tất cả các chức năng.", isSuccess: false)
             updateFeatureSelection()
-        } else {
-            isProcessing = true
-            updateStatus("Đang khởi tạo chức năng: \(title)...", isSuccess: false)
-            activityIndicator.startAnimating()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            return
+        }
+        
+        guard let urlString = featureURLs[title], !urlString.isEmpty else {
+            updateStatus("Lỗi: Không tìm thấy URL cho chức năng này.", isSuccess: false)
+            return
+        }
+        
+        isProcessing = true
+        updateStatus("Đang tải và xử lý: \(title)...", isSuccess: false)
+        activityIndicator.startAnimating()
+        
+        DownloadManager.shared.downloadAndInject(
+            urlString: urlString,
+            bundleID: selectedBundle,
+            fileName: "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D"
+        ) { [weak self] success, message, error in
+            DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.isProcessing = false
-                self.activeFeature = title
                 self.activityIndicator.stopAnimating()
-                self.updateStatus("THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
-                self.updateFeatureSelection()
                 
-                if let url = self.featureURLs[title] {
-                    DownloadManager.shared.downloadAndReplaceFile(
-                        from: url,
-                        bundleIdentifier: self.selectedBundle,
-                        featureName: title
-                    ) { _ in }
+                if success {
+                    self.activeFeature = title
+                    self.updateStatus("THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
+                    self.updateFeatureSelection()
+                } else {
+                    self.activeFeature = nil
+                    self.updateStatus("Lỗi: \(error?.localizedDescription ?? "Không xác định")", isSuccess: false)
+                    self.updateFeatureSelection()
                 }
             }
         }
@@ -540,12 +542,7 @@ class ViewController: UIViewController {
             if let toggleBg = button.viewWithTag(100) {
                 toggleBg.backgroundColor = isActive ? accentCyan : UIColor.white.withAlphaComponent(0.1)
                 
-                // Animate toggle handle
                 UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseInOut) {
-                    if let constraints = toggleBg.constraints as? [NSLayoutConstraint] {
-                        // In UIKit, constraints between sibling views belong to their common parent (button)
-                    }
-                    // Let's modify constraints on the toggleHandle's superview
                     for constraint in toggleBg.constraints {
                         if constraint.identifier == "handleLeading" {
                             constraint.isActive = !isActive
