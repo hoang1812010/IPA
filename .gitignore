@@ -1,43 +1,12 @@
 ```
-# Xcode
-*.xcodeproj/
-*.xcworkspace/
-*.pbxuser
-*.mode1v3
-*.perspectivev3
-*.xcuserstate
-project.xcworkspace/
-xcuserdata/
+# Dependencies
+node_modules/
 
-# Build
-build/
-DerivedData/
-
-# Swift
-*.swiftmodule
-*.swiftdoc
-*.swiftdip
+# Editors
+.vscode/
 
 # Environment
 .env
 .env.local
 *.env.*
-
-# Dependencies
-node_modules/
-Pods/
-Carthage/
-vendor/bundle/
-
-# Logs
-*.log
-*.out
-
-# OS generated
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
 ```
