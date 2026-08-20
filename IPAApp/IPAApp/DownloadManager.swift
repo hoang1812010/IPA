@@ -135,18 +135,25 @@ extension UIDevice {
 class KeyValidator {
     static let shared = KeyValidator()
     
-    // Server URL - bạn cần thay đổi thành server của mình
-    var serverURL: String = "https://yourserver.com/api/validate"
+    // Server URL - Trỏ tới Cloudflare Worker
+    var serverURL: String = "https://key-server-api.dinhtienhoang1812010.workers.dev/api/client/validate"
     
     private init() {}
     
     func validate(key: String, deviceId: String, completion: @escaping (Bool, String?) -> Void) {
-        guard let url = URL(string: "\(serverURL)?key=\(key)&udid=\(deviceId)") else {
+        guard let url = URL(string: serverURL) else {
             completion(false, "Invalid server URL")
             return
         }
         
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["key": key, "udid": deviceId]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(false, "Lỗi kết nối: \(error.localizedDescription)")
                 return
@@ -158,20 +165,18 @@ class KeyValidator {
             }
             
             do {
-                // Parse JSON response
-                // Expected format: {"valid": true, "message": "..."}
+                // Parse JSON response từ Cloudflare API (dùng trường "success")
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let isValid = json["valid"] as? Bool {
+                   let isSuccess = json["success"] as? Bool {
                     
-                    if isValid {
+                    if isSuccess {
                         completion(true, nil)
                     } else {
                         let message = json["message"] as? String ?? "Key không hợp lệ"
                         completion(false, message)
                     }
                 } else {
-                    // Fallback: simple validation
-                    completion(data.count > 0 && String(data: data, encoding: .utf8)?.contains("true") == true, nil)
+                    completion(false, "Dữ liệu trả về không đúng định dạng")
                 }
             } catch {
                 completion(false, "Lỗi parse phản hồi: \(error.localizedDescription)")

@@ -1,11 +1,4 @@
-//
-//  ContentView.swift
-//  IPAApp
-//
-//  Created on 2024.
-//
-
-import SwiftUI
+﻿import SwiftUI
 
 struct ContentView: View {
     @State private var isAuthenticated = false
@@ -14,14 +7,10 @@ struct ContentView: View {
     var body: some View {
         Group {
             if isAuthenticated {
-                MainView()
+                MainView(apiKey: apiKey)
             } else {
                 LoginView(apiKey: $apiKey, isAuthenticated: $isAuthenticated)
             }
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

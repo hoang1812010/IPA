@@ -1,272 +1,340 @@
-//
-//  MainView.swift
-//  IPAApp
-//
-//  Created on 2024.
-//
-
-import SwiftUI
+﻿import SwiftUI
 
 struct MainView: View {
+    var apiKey: String
+    
     @State private var selectedBundle: String = "com.dts.freefireth"
     @State private var activeFeature: String? = nil
+    
     @State private var isProcessing = false
-    @State private var statusMessage = ""
-    @State private var showStatus = false
+    @State private var statusMessage = "Hệ thống sẵn sàng. Đang chờ lệnh..."
     
-    let bundles = ["com.dts.freefireth", "com.dts.freefiremax"]
-    
-    // URLs cho từng chức năng - bạn cần thay thế bằng URL thực tế
+    // Original App Data
     let featureURLs: [String: String] = [
-        "nhe_tam": "https://download2297.mediafire.com/y8g6xu8dzm9g1MxwluU4TrcEBuCtTrLsHQV6y7qfvf_syMLA1FlkNTUw-_qzfHAD5GLTMY_jo3xzyfpwBfPmNevT-zoUlCYXX-rt-0ZM3b8gbIp2vi_3pk0WoLelL3X2ystqkHXkpIj5WtxRLGJmrHZqMVv-BTYFp3mhQB56XOVykIw/c95kmzxa0fjd0tz/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "proxy_body": "https://download2391.mediafire.com/ah3lib0uqnugbHDftsXjfJKo5RDRXyL1uf1VOwPv7trlJJoWOFug7pEuir-ddusvN344pDet047Rt1AFiEFTjBB0XoxUe59xhwTjIcbuatFfX8suIUjmjcyCOAIjGCsBpVCNp1ApBC5fj8Rx262sqsErzzhOx44MfK49O_zCESRDfoY/ykc22di703wc51f/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "proxy_neck": "https://download2389.mediafire.com/7kvcg74pn6lgnrV-OCglaJ1RnjSj9VOaNCf2mV7-9H00bNIwP-UjOHBUdOgxq9_HrMNFCk2N7WQvuGOgpCoahA7HElMs1iBEnED55cM37K81Vz9217GyZJbevp4WXfl8YH7XFQ6fg2vOsrluCR8QKUr8cF9AtzyuL4F_XT11VlU-3BU/c5hq8513ewb312s/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "proxy_drag": "https://download2391.mediafire.com/rutwuk3tob0gA_uGxk-8LYfV0Y4sedXSwgzjOY1j7cAQyEYuyCbIrFIyjk_4VKyYeqZ_mqwLZcX63RcYmcZS0-w7L4xb4PSuPXhzIXRvjuRdICAgphoSaFFOm7gEiSv6w--dPtFcRy2ZwqoMMp5zLltZcYlB4THt2XzZEwm6iQRcmbc/7ueocoouf759j22/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D"
+        "Nhẹ Tâm": "https://download2297.mediafire.com/y8g6xu8dzm9g1MxwluU4TrcEBuCtTrLsHQV6y7qfvf_syMLA1FlkNTUw-_qzfHAD5GLTMY_jo3xzyfpwBfPmNevT-zoUlCYXX-rt-0ZM3b8gbIp2vi_3pk0WoLelL3X2ystqkHXkpIj5WtxRLGJmrHZqMVv-BTYFp3mhQB56XOVykIw/c95kmzxa0fjd0tz/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "Proxy Body": "https://download2391.mediafire.com/ah3lib0uqnugbHDftsXjfJKo5RDRXyL1uf1VOwPv7trlJJoWOFug7pEuir-ddusvN344pDet047Rt1AFiEFTjBB0XoxUe59xhwTjIcbuatFfX8suIUjmjcyCOAIjGCsBpVCNp1ApBC5fj8Rx262sqsErzzhOx44MfK49O_zCESRDfoY/ykc22di703wc51f/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "Proxy Neck": "https://download2389.mediafire.com/7kvcg74pn6lgnrV-OCglaJ1RnjSj9VOaNCf2mV7-9H00bNIwP-UjOHBUdOgxq9_HrMNFCk2N7WQvuGOgpCoahA7HElMs1iBEnED55cM37K81Vz9217GyZJbevp4WXfl8YH7XFQ6fg2vOsrluCR8QKUr8cF9AtzyuL4F_XT11VlU-3BU/c5hq8513ewb312s/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
+        "Proxy Drag": "https://download2391.mediafire.com/rutwuk3tob0gA_uGxk-8LYfV0Y4sedXSwgzjOY1j7cAQyEYuyCbIrFIyjk_4VKyYeqZ_mqwLZcX63RcYmcZS0-w7L4xb4PSuPXhzIXRvjuRdICAgphoSaFFOm7gEiSv6w--dPtFcRy2ZwqoMMp5zLltZcYlB4THt2XzZEwm6iQRcmbc/7ueocoouf759j22/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D"
     ]
     
-    let features: [FeatureItem] = [
-        FeatureItem(name: "Nhẹ Tâm", id: "nhe_tam", color: .blue),
-        FeatureItem(name: "Proxy Body", id: "proxy_body", color: .green),
-        FeatureItem(name: "Proxy Neck", id: "proxy_neck", color: .orange),
-        FeatureItem(name: "Proxy Drag", id: "proxy_drag", color: .purple)
-    ]
+    let features = ["Nhẹ Tâm", "Proxy Body", "Proxy Neck", "Proxy Drag"]
+    let featureIcons = ["wind", "figure.walk", "scope", "hand.point.up.left.fill"]
+    
+    // Colors
+    let bgColor = Color(red: 0.02, green: 0.02, blue: 0.03)
+    let surfaceColor = Color.white.opacity(0.03)
+    let surfaceHover = Color.white.opacity(0.06)
+    let borderColor = Color.white.opacity(0.06)
+    let accentCyan = Color(red: 0.0, green: 0.95, blue: 1.0)
+    let statusGreen = Color(red: 0.2, green: 0.78, blue: 0.35)
+    let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
     
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [Color.black, Color.gray.opacity(0.3)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            bgColor.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 25) {
-                    // Header
-                    VStack(spacing: 10) {
-                        Image(systemName: "shield.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.blue)
+            VStack(spacing: 0) {
+                // Scrollable Content
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
                         
-                        Text("IPA TOOL")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.top, 20)
-                    
-                    // Bundle Selector
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("CHỌN BUNDLE")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.gray)
-                            .textCase(.uppercase)
-                        
-                        HStack(spacing: 12) {
-                            ForEach(bundles, id: \.self) { bundle in
-                                Button(action: {
-                                    selectedBundle = bundle
-                                    activeFeature = nil
-                                }) {
-                                    HStack {
-                                        Image(systemName: selectedBundle == bundle ? "checkmark.circle.fill" : "circle")
-                                            .font(.system(size: 16))
-                                        
-                                        Text(bundle)
-                                            .font(.system(size: 12, weight: .medium))
-                                            .lineLimit(1)
-                                    }
-                                    .foregroundColor(selectedBundle == bundle ? .black : .white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        selectedBundle == bundle ?
-                                            LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing) :
-                                            Color.gray.opacity(0.2)
-                                    )
-                                    .cornerRadius(10)
+                        // Header
+                        HStack {
+                            HStack(spacing: 8) {
+                                if let uiImage = UIImage(named: "iconapp") {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 24, height: 24)
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                        .shadow(color: accentCyan.opacity(0.3), radius: 4)
                                 }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Features Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("CHỨC NĂNG")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.gray)
-                            .textCase(.uppercase)
-                        
-                        VStack(spacing: 12) {
-                            ForEach(features) { feature in
-                                FeatureButton(
-                                    feature: feature,
-                                    isActive: activeFeature == feature.id,
-                                    isProcessing: isProcessing && activeFeature == feature.id,
-                                    action: {
-                                        activateFeature(feature)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Status Display
-                    if showStatus {
-                        VStack(spacing: 10) {
-                            HStack {
-                                if isProcessing {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                                } else {
-                                    Image(systemName: statusMessage.contains("thành công") || statusMessage.contains("Thành công") ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(statusMessage.contains("thành công") || statusMessage.contains("Thành công") ? .green : .red)
-                                }
-                                
-                                Text(statusMessage)
-                                    .font(.system(size: 13))
+                                Text("Cheat VN")
+                                    .font(.system(size: 20, weight: .heavy))
                                     .foregroundColor(.white)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.black.opacity(0.5))
-                            .cornerRadius(10)
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(statusGreen)
+                                    .frame(width: 6, height: 6)
+                                    .shadow(color: statusGreen, radius: 4)
+                                Text("AN TOÀN")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(statusGreen)
+                                    .tracking(1)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(statusGreen.opacity(0.1))
+                            .overlay(RoundedRectangle(cornerRadius: 100).stroke(statusGreen.opacity(0.2), lineWidth: 1))
+                            .cornerRadius(100)
                         }
-                        .padding(.horizontal, 20)
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
-                    
-                    Spacer(minLength: 40)
-                }
-            }
-        }
-        .navigationBarHidden(true)
-    }
-    
-    private func activateFeature(_ feature: FeatureItem) {
-        if activeFeature == feature.id {
-            // Deactivate if already active
-            activeFeature = nil
-            statusMessage = ""
-            showStatus = false
-        } else {
-            // Activate new feature
-            activeFeature = feature.id
-            isProcessing = true
-            showStatus = true
-            statusMessage = "Đang tải dữ liệu cho \(feature.name)..."
-            
-            // Get download URL for this feature
-            guard let downloadURL = featureURLs[feature.id] else {
-                isProcessing = false
-                statusMessage = "Lỗi: Không tìm thấy URL cho chức năng này"
-                return
-            }
-            
-            // Download and replace file
-            DownloadManager.shared.downloadAndReplaceFile(
-                from: downloadURL,
-                bundleIdentifier: selectedBundle,
-                featureName: feature.name
-            ) { result in
-                DispatchQueue.main.async {
-                    isProcessing = false
-                    switch result {
-                    case .success:
-                        statusMessage = "\(feature.name) đã được kích hoạt thành công!"
-                        // Auto-hide success message after 3 seconds
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            if !isProcessing {
-                                showStatus = false
+                        .padding(.top, 16)
+                        
+                        // License Info Card
+                        HStack {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("MÃ KÍCH HOẠT")
+                                    .font(.system(size: 10, weight: .heavy))
+                                    .foregroundColor(accentCyan)
+                                    .tracking(1)
+                                Text(apiKey.isEmpty ? "XXXX-XXXX" : apiKey)
+                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.white)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("THỜI GIAN CÒN LẠI")
+                                    .font(.system(size: 10, weight: .heavy))
+                                    .foregroundColor(textSecondary)
+                                    .tracking(1)
+                                HStack(spacing: 6) {
+                                    Image(systemName: "clock")
+                                        .foregroundColor(statusGreen)
+                                        .font(.system(size: 12, weight: .bold))
+                                    Text("6d 23h 59m")
+                                        .font(.system(size: 14, weight: .heavy))
+                                        .foregroundColor(.white)
+                                }
                             }
                         }
-                    case .failure(let error):
-                        statusMessage = "Lỗi: \(error.localizedDescription)"
+                        .padding(16)
+                        .background(accentCyan.opacity(0.05))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(accentCyan.opacity(0.2), lineWidth: 1))
+                        .cornerRadius(16)
+                        .shadow(color: accentCyan.opacity(0.05), radius: 15)
+                        
+                        // TARGET BUNDLE
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("CHỌN PHIÊN BẢN GAME")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(textSecondary)
+                                .tracking(1)
+                            
+                            VStack(spacing: 16) {
+                                BundleCardView(
+                                    title: "Free Fire (Thường)",
+                                    imageName: "freefireth",
+                                    isSelected: selectedBundle == "com.dts.freefireth"
+                                ) {
+                                    switchBundle("com.dts.freefireth")
+                                }
+                                
+                                BundleCardView(
+                                    title: "Free Fire MAX",
+                                    imageName: "freefiremax",
+                                    isSelected: selectedBundle == "com.dts.freefiremax"
+                                ) {
+                                    switchBundle("com.dts.freefiremax")
+                                }
+                            }
+                        }
+                        
+                        // INJECTION PAYLOADS
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("DANH SÁCH CHỨC NĂNG")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(textSecondary)
+                                .tracking(1)
+                            
+                            VStack(spacing: 16) {
+                                ForEach(0..<features.count, id: \.self) { index in
+                                    let feature = features[index]
+                                    let icon = featureIcons[index]
+                                    let isActive = (activeFeature == feature)
+                                    
+                                    ModuleCardView(
+                                        title: feature,
+                                        iconSystemName: icon,
+                                        isActive: isActive
+                                    ) {
+                                        toggleFeature(feature)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer().frame(height: 20)
                     }
+                    .padding(.horizontal, 24)
                 }
-            }
-        }
-    }
-}
-
-// MARK: - Feature Item Model
-struct FeatureItem: Identifiable {
-    let id = UUID()
-    let name: String
-    let featureId: String
-    let color: Color
-    
-    init(name: String, id: String, color: Color) {
-        self.name = name
-        self.featureId = id
-        self.color = color
-    }
-}
-
-// MARK: - Feature Button Component
-struct FeatureButton: View {
-    let feature: FeatureItem
-    let isActive: Bool
-    let isProcessing: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(feature.color.opacity(0.2))
-                        .frame(width: 40, height: 40)
+                
+                // Sticky Console
+                HStack(spacing: 8) {
+                    Text(">")
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .foregroundColor(statusMessage.contains("THÀNH CÔNG") ? statusGreen : accentCyan)
+                    
+                    Text(statusMessage)
+                        .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        .foregroundColor(statusMessage.contains("THÀNH CÔNG") ? .white : textSecondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    
+                    Spacer()
                     
                     if isProcessing {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: feature.color))
-                            .scaleEffect(0.6)
-                    } else {
-                        Image(systemName: isActive ? "checkmark" : "arrow.down.circle")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(isActive ? .white : feature.color)
+                            .progressViewStyle(CircularProgressViewStyle(tint: accentCyan))
+                            .scaleEffect(0.7)
                     }
                 }
+                .padding(16)
+                .background(Color.black.opacity(0.4))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.03), lineWidth: 1))
+                .cornerRadius(16)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+                .padding(.top, 8)
+            }
+        }
+    }
+    
+    // Actions
+    func switchBundle(_ bundle: String) {
+        selectedBundle = bundle
+        statusMessage = "Đã chuyển đổi mục tiêu sang: \(bundle == "com.dts.freefireth" ? "Free Fire Thường" : "Free Fire MAX")"
+    }
+    
+    func toggleFeature(_ feature: String) {
+        if activeFeature == feature {
+            // Turn off
+            activeFeature = nil
+            statusMessage = "Đã tắt tất cả các chức năng."
+        } else {
+            // Turn on
+            isProcessing = true
+            statusMessage = "Đang khởi tạo chức năng: \(feature)..."
+            
+            // Simulate injection delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                isProcessing = false
+                activeFeature = feature
+                statusMessage = "THÀNH CÔNG: Đã bật \(feature)."
                 
-                // Feature Name
-                Text(feature.name)
-                    .font(.system(size: 15, weight: isActive ? .semibold : .medium))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Status Indicator
-                if isActive {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.green)
+                // Actually trigger the DownloadManager here if needed
+                if let url = featureURLs[feature] {
+                    DownloadManager.shared.downloadAndReplaceFile(
+                        from: url,
+                        bundleID: selectedBundle,
+                        filename: "cache_res"
+                    )
                 }
             }
-            .padding()
-            .background(
-                Group {
-                    if isActive {
-                        LinearGradient(
-                            gradient: Gradient(colors: [feature.color.opacity(0.8), feature.color]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    } else {
-                        Color.gray.opacity(0.2)
-                    }
-                }
-            )
-            .cornerRadius(12)
-            .shadow(color: isActive ? feature.color.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
         }
-        .disabled(isProcessing)
     }
 }
 
-#Preview {
-    MainView()
+// Subviews for Cards
+struct BundleCardView: View {
+    let title: String
+    let imageName: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    let accentCyan = Color(red: 0.0, green: 0.95, blue: 1.0)
+    let surfaceColor = Color.white.opacity(0.03)
+    let borderColor = Color.white.opacity(0.06)
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                if let uiImage = UIImage(named: imageName) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .opacity(isSelected ? 1.0 : 0.5)
+                        .shadow(color: isSelected ? accentCyan.opacity(0.3) : .clear, radius: 10)
+                } else {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 44, height: 44)
+                }
+                
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(isSelected ? .white : Color(red: 142/255, green: 142/255, blue: 147/255))
+                
+                Spacer()
+                
+                // Radio Button
+                ZStack {
+                    Circle()
+                        .strokeBorder(isSelected ? accentCyan : Color.gray, lineWidth: 2)
+                        .frame(width: 22, height: 22)
+                    
+                    if isSelected {
+                        Circle()
+                            .fill(accentCyan)
+                            .frame(width: 12, height: 12)
+                            .shadow(color: accentCyan, radius: 4)
+                    }
+                }
+            }
+            .padding(16)
+            .background(isSelected ?
+                        LinearGradient(gradient: Gradient(colors: [accentCyan.opacity(0.05), .clear]), startPoint: .leading, endPoint: .trailing)
+                        : LinearGradient(gradient: Gradient(colors: [surfaceColor, surfaceColor]), startPoint: .leading, endPoint: .trailing))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(isSelected ? accentCyan.opacity(0.3) : borderColor, lineWidth: 1))
+            .cornerRadius(16)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct ModuleCardView: View {
+    let title: String
+    let iconSystemName: String
+    let isActive: Bool
+    let action: () -> Void
+    
+    let accentCyan = Color(red: 0.0, green: 0.95, blue: 1.0)
+    let surfaceColor = Color.white.opacity(0.03)
+    let borderColor = Color.white.opacity(0.06)
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isActive ? accentCyan.opacity(0.1) : .clear)
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: iconSystemName)
+                        .font(.system(size: 20))
+                        .foregroundColor(isActive ? accentCyan : Color.gray)
+                }
+                
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(isActive ? .white : Color(red: 142/255, green: 142/255, blue: 147/255))
+                
+                Spacer()
+                
+                // Toggle Switch
+                ZStack(alignment: isActive ? .trailing : .leading) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isActive ? accentCyan : Color.white.opacity(0.1))
+                        .frame(width: 44, height: 24)
+                    
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 20, height: 20)
+                        .padding(2)
+                        .shadow(color: Color.black.opacity(0.2), radius: 2)
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isActive)
+            }
+            .padding(16)
+            .background(isActive ?
+                        LinearGradient(gradient: Gradient(colors: [accentCyan.opacity(0.05), .clear]), startPoint: .leading, endPoint: .trailing)
+                        : LinearGradient(gradient: Gradient(colors: [surfaceColor, surfaceColor]), startPoint: .leading, endPoint: .trailing))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(isActive ? accentCyan.opacity(0.3) : borderColor, lineWidth: 1))
+            .cornerRadius(16)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
 }
