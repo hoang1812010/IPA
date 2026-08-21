@@ -61,23 +61,20 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             try FileManager.default.moveItem(at: location, to: destinationURL)
             
             guard let uuid = findContainerUUID(for: bundleID) else {
-                throw NSError(domain: "GameNotFound", code: -2, userInfo: [NSLocalizedDescriptionKey: "Không tìm thấy game. Vui lòng mở game ít nhất 1 lần."])
+                throw NSError(domain: "GameNotFound", code: -2, userInfo: [NSLocalizedDescriptionKey: "Game not found. Please open the game at least once."])
             }
             
             let targetFileName = "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D"
-            let targetPath = "/private/var/mobile/Containers/Data/Application/\(uuid)/Library/Caches/\(targetFileName)"
+            let targetPath = "/private/var/mobile/Containers/Data/Application/\(uuid)/Documents/contentcache/Compulsory/ios/gameassetbundles/\(targetFileName)"
             
             let sourcePath = destinationURL.path
-            let result = sourcePath.withCString { srcPtr in
-                return targetPath.withCString { dstPtr in
-                    kfp_write_file(srcPtr, dstPtr)
-                }
-            }
             
-            if result == 0 {
-                completion(true, "Đã ghi đè thành công vào: \(targetPath)", nil)
+            let success = ExploitManager.writeFile(src: sourcePath, dst: targetPath)
+            
+            if success {
+                completion(true, "Successfully injected into: \(targetPath)", nil)
             } else {
-                throw NSError(domain: "ExploitFailed", code: Int(result), userInfo: [NSLocalizedDescriptionKey: "Lỗi Kernel Exploit: Mã \(result)"])
+                throw NSError(domain: "ExploitFailed", code: -3, userInfo: [NSLocalizedDescriptionKey: "Exploit failed. Device or iOS version not supported."])
             }
             
         } catch {
