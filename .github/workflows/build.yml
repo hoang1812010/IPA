@@ -1,43 +1,60 @@
-name: Build Unsigned IPA
+name: Build IPA Unsigned
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ "main" ] # Sẽ tự động chạy khi có code mới push lên nhánh main
+  workflow_dispatch:     # Cho phép bạn bấm nút "Run workflow" thủ công trên GitHub
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-latest # Sử dụng máy ảo MacOS của GitHub
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Install XcodeGen
-      run: brew install xcodegen
+      # 1. Cài đặt XcodeGen (Đã thêm cấu hình chống treo Homebrew)
+      - name: Install XcodeGen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+          NONINTERACTIVE: 1
+        run: brew install xcodegen -v
 
-    - name: Generate Xcode project
-      run: xcodegen generate
+      # 2. Tạo file IPAApp.xcodeproj từ project.yml
+      - name: Generate Xcode Project
+        run: xcodegen generate
 
-    - name: Build unsigned .app
-      run: |
-        xcodebuild -project IPAApp.xcodeproj \
-                   -scheme IPAApp \
-                   -configuration Release \
-                   CODE_SIGN_IDENTITY="" \
-                   CODE_SIGNING_REQUIRED=NO \
-                   CODE_SIGNING_ALLOWED=NO \
-                   -derivedDataPath build
+      # 3. Biên dịch mã nguồn (Build Unsigned App)
+      - name: Build Unsigned App
+        run: |
+          xcodebuild -project IPAApp.xcodeproj \
+            -scheme IPAApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath build \
+            build
 
-    - name: Package .ipa
-      run: |
-        mkdir -p Payload
-        cp -r build/Build/Products/Release-iphoneos/IPAApp.app Payload/
-        zip -r IPAApp-Unsigned.ipa Payload/
+      # 4. Đóng gói thành file .ipa
+      - name: Package into IPA
+        run: |
+          # Tạo thư mục Payload chuẩn cấu trúc của iOS
+          mkdir -p Payload
+          
+          # Đưa file .app vừa build vào Payload
+          mv build/Build/Products/Release-iphoneos/IPAApp.app Payload/
+          
+          # Nén lại thành file .ipa
+          zip -qr IPAApp.ipa Payload
 
-    - name: Upload unsigned IPA
-      uses: actions/upload-artifact@v4
-      with:
-        name: IPAApp-Unsigned
-        path: IPAApp-Unsigned.ipa
+      # 5. Tải file .ipa lên mục Artifacts của GitHub Actions
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPAApp-Unsigned
+          path: IPAApp.ipa
