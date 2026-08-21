@@ -11,12 +11,17 @@ class ViewController: UIViewController {
     private let features = ["Nhẹ Tâm", "Proxy Body", "Proxy Neck", "Proxy Drag", "Khôi Phục"]
     private let featureIcons = ["wind", "figure.walk", "scope", "hand.point.up.left.fill", "arrow.uturn.backward"]
     
-    private let featureURLs: [String: String] = [
-        "Nhẹ Tâm": "https://download2297.mediafire.com/y8g6xu8dzm9g1MxwluU4TrcEBuCtTrLsHQV6y7qfvf_syMLA1FlkNTUw-_qzfHAD5GLTMY_jo3xzyfpwBfPmNevT-zoUlCYXX-rt-0ZM3b8gbIp2vi_3pk0WoLelL3X2ystqkHXkpIj5WtxRLGJmrHZqMVv-BTYFp3mhQB56XOVykIw/c95kmzxa0fjd0tz/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "Proxy Body": "https://download2391.mediafire.com/ah3lib0uqnugbHDftsXjfJKo5RDRXyL1uf1VOwPv7trlJJoWOFug7pEuir-ddusvN344pDet047Rt1AFiEFTjBB0XoxUe59xhwTjIcbuatFfX8suIUjmjcyCOAIjGCsBpVCNp1ApBC5fj8Rx262sqsErzzhOx44MfK49O_zCESRDfoY/ykc22di703wc51f/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "Proxy Neck": "https://download2389.mediafire.com/7kvcg74pn6lgnrV-OCglaJ1RnjSj9VOaNCf2mV7-9H00bNIwP-UjOHBUdOgxq9_HrMNFCk2N7WQvuGOgpCoahA7HElMs1iBEnED55cM37K81Vz9217GyZJbevp4WXfl8YH7XFQ6fg2vOsrluCR8QKUr8cF9AtzyuL4F_XT11VlU-3BU/c5hq8513ewb312s/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "Proxy Drag": "https://download2391.mediafire.com/rutwuk3tob0gA_uGxk-8LYfV0Y4sedXSwgzjOY1j7cAQyEYuyCbIrFIyjk_4VKyYeqZ_mqwLZcX63RcYmcZS0-w7L4xb4PSuPXhzIXRvjuRdICAgphoSaFFOm7gEiSv6w--dPtFcRy2ZwqoMMp5zLltZcYlB4THt2XzZEwm6iQRcmbc/7ueocoouf759j22/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs%7E3D",
-        "Khôi Phục": "https://download1085.mediafire.com/qmr4z0kd691gOMdfgkVFam34Dy299HymW70J1Qa1hDMh9VC9Uew4nmWKRXYYowBkvdTSas8J2C764TOECdgMAOTMSR2xbrL6GxvghLyI1C7CMkV0T3MJIezjJrfN-p9D3Jf30XbmkhqiU_ThdJcLgxVcRzK9p4ufluFoGwG4oGevAcU/ugy6x21el8d6w37/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs"
+    private func d(_ b64: String) -> String {
+        guard let d = Data(base64Encoded: b64), let s = String(data: d, encoding: .utf8) else { return "" }
+        return s
+    }
+    
+    private lazy var featureURLs: [String: String] = [
+        "Nhẹ Tâm": d("aHR0cHM6Ly9kb3dubG9hZDIyOTcubWVkaWFmaXJlLmNvbS95OGc2eHU4ZHptOWcxTXh3bHVVNFRyY0VCdUN0VHJMc0hRVjZ5N3FmdmZfc3lNTEExRmxrTlRVdy1fcXpmSEFENUdMVE1ZX2pvM3h6eWZwd0JmUG1OZXZULXpvVWxDWVhYLXJ0LTBaTTNiOGdiSXAydmlfM3BrMFdvTGVsTDNYMnlzdHFrSFhrcElqNVd0eFJMR0ptckhacU1Wdi1CVFlGcDNtaFFCNTZYT1Z5a0l3L2M5NWttenhhMGZqZDB0ei9jYWNoZV9yZXMuQ2ZuRmY1OXNyMVNic3FRNkpxVEtzRXVzaktzJTdFM0Q="),
+        "Proxy Body": d("aHR0cHM6Ly9kb3dubG9hZDIzOTEubWVkaWFmaXJlLmNvbS9haDNsaWIwdXFudWdiSERmdHNYamZKS281UkRSWHlMMXVmMVZPd1B2N3RybEpKb1dPRnVnN3BFdWlyLWRkdXN2TjM0NHBEZXQwNDdSdDFBRmlFRlRqQkIwWG94VWU1OXhod1RqSWNidWF0RmZYOHN1SVVqbWpjeUNPQUlqR0NzQnBWQ05wMUFwQkM1Zmo4UngyNjJzcXNFcnp6aE94NDRNZks0OU9fekNFU1JEZm9ZL3lrYzIyZGk3MDN3YzUxZi9jYWNoZV9yZXMuQ2ZuRmY1OXNyMVNic3FRNkpxVEtzRXVzaktzJTdFM0Q="),
+        "Proxy Neck": d("aHR0cHM6Ly9kb3dubG9hZDIzODkubWVkaWFmaXJlLmNvbS83a3ZjZzc0cG42bGduclYtT0NnbGFKMVJualNqOVZPYU5DZjJtVjctOUgwMGJOSXdQLVVqT0hCVWRPZ3hxOV9Ick1ORkNrMk43V1F2dUdPZ3BDb2FoQTdIRWxNczFpQkVuRUQ1NWNNMzdLODFWejkyMTdHeVpKYmV2cDRXWGZsOFlIN1hGUTZmZzJ2T3NybHVDUjhRS1VyOGNGOUF0enl1TDRGX1hUMTFWbFUtM0JVL2M1aHE4NTEzZXdiMzEycy9jYWNoZV9yZXMuQ2ZuRmY1OXNyMVNic3FRNkpxVEtzRXVzaktzJTdFM0Q="),
+        "Proxy Drag": d("aHR0cHM6Ly9kb3dubG9hZDIzOTEubWVkaWFmaXJlLmNvbS9ydXR3dWszdG9iMGdBX3VHeGstOExZZlYwWTRzZWRYU3dnempPWTFqN2NBUXlFWXV5Q2JJckZJeWprXzRWS3lZZXFaX21xd0xaY1g2M1JjWW1jWlMwLXc3TDR4YjRQU3VQWGh6SVhSdmp1UmRJQ0FncGhvU2FGRk9tN2dFaVN2NnctLWRQdEZjUnkyWndxb01NcDV6TGx0WmNZbEI0VEh0Mlh6WkV3bTZpUVJjbWJjLzd1ZW9jb291Zjc1OWoyMi9jYWNoZV9yZXMuQ2ZuRmY1OXNyMVNic3FRNkpxVEtzRXVzaktzJTdFM0Q="),
+        "Khôi Phục": d("aHR0cHM6Ly9kb3dubG9hZDEwODUubWVkaWFmaXJlLmNvbS9xbXI0ejBrZDY5MWdPTWRmZ2tWRmFtMzREeTI5OUh5bVc3MEoxUWExaERNaDlWQzlVZXc0bm1XS1JYWVlvd0JrdmRUU2FzOEoyQzc2NFRPRUNkZ01BT1RNU1IyeGJyTDZHeHZnaEx5STFDN0NNa1YwVDNNSkllempKcmZOLXA5RDNKZjMwWGJta2hxaVVfVGhkSmNMZ3hWY1J6SzlwNHVmbHVGb0d3RzRvR2V2QWNVL3VneTZ4MjFlbDhkNnczNy9jYWNoZV9yZXMuQ2ZuRmY1OXNyMVNic3FRNkpxVEtzRXVzaktz")
     ]
     
     private let scrollView = UIScrollView()
