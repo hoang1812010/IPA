@@ -3,6 +3,10 @@
 #import "wallpaper_zip.h"
 #import "mcm_bridge.h"
 
+int run_bad_query(void);
+int run_wallpaper_zip(void);
+int run_mcm_bridge(void);
+
 @implementation SandboxEscaper
 
 + (BOOL)escapeSandbox {
