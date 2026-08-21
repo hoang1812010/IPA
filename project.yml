@@ -25,7 +25,6 @@ targets:
         INFOPLIST_FILE: IPAApp/Info.plist
         SWIFT_VERSION: 5.0
         SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
-        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
     dependencies:
       - framework: libsqlite3.tbd
       - framework: UIKit.framework
