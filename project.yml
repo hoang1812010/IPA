@@ -1,16 +1,17 @@
-# project.yml
 name: IPAApp
 options:
   bundleIdPrefix: com.dts
   deploymentTarget:
     iOS: 13.0
-  developmentTeam: YOUR_TEAM_ID  # Bạn có thể để trống và dùng biến môi trường sau
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.dts.freefireth
     MARKETING_VERSION: 1.0
     CURRENT_PROJECT_VERSION: 1
-    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: ""
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGNING_ALLOWED: NO
 targets:
   IPAApp:
     type: application
@@ -22,8 +23,8 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: IPAApp/Info.plist
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: 5.0
+        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
     dependencies:
       - framework: libsqlite3.tbd
       - framework: UIKit.framework
