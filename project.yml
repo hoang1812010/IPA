@@ -2,7 +2,7 @@ name: IPAApp
 options:
   bundleIdPrefix: com.dts
   deploymentTarget:
-    iOS: 13.0
+    iOS: 14.0 # Đã nâng lên 14.0 để fix warning pwritev/preadv
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.dts.freefireth
@@ -29,5 +29,8 @@ targets:
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
     dependencies:
       - framework: libsqlite3.tbd
+        embed: false  # Chặn copy system library vào app bundle
       - framework: UIKit.framework
+        embed: false  # Chặn copy system framework
       - framework: Foundation.framework
+        embed: false  # Chặn copy system framework
