@@ -1,55 +1,23 @@
 name: IPAApp
-
-on:
-  push:
-    branches: [ "main" ] # Hoặc nhánh bạn đang dùng
-  workflow_dispatch:     # Cho phép bấm chạy thủ công trên web
-
-jobs:
-  build:
-    runs-on: macos-latest # Bắt buộc dùng MacOS để build iOS
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install XcodeGen
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
-          HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
-          NONINTERACTIVE: 1
-        run: brew install xcodegen -v
-
-      - name: Generate Xcode Project
-        run: xcodegen generate # Lệnh này sẽ đọc file project.yml để tạo ra IPAApp.xcodeproj
-
-      - name: Build Unsigned App
-        run: |
-          xcodebuild -project IPAApp.xcodeproj \
-            -scheme IPAApp \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination "generic/platform=iOS" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            -derivedDataPath build \
-            build
-
-      - name: Package into IPA
-        run: |
-          # Tạo thư mục Payload chuẩn cấu trúc của iOS
-          mkdir -p Payload
-          
-          # Đưa file .app vừa build vào Payload
-          mv build/Build/Products/Release-iphoneos/IPAApp.app Payload/
-          
-          # Nén lại thành file .ipa
-          zip -qr IPAApp.ipa Payload
-
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: IPAApp-Unsigned
-          path: IPAApp.ipa
+options:
+  bundleIdPrefix: com.dth
+  createIntermediateGroups: true
+targets:
+  IPAApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: IPAApp
+      - path: exploit
+      - path: kexploit
+    info:
+      path: IPAApp/Info.plist
+    settings:
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_ALLOWED: NO
+      SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
+      ENABLE_BITCODE: NO
+      SWIFT_VERSION: 5.0
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
