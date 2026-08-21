@@ -458,23 +458,23 @@ class ViewController: UIViewController {
     @objc private func featureTapped(_ sender: UIButton) {
         guard !isProcessing else { return }
         guard let title = sender.title(for: .normal) else { return }
-        
+    
         if activeFeature == title {
             activeFeature = nil
             updateStatus("Đã tắt tất cả các chức năng.", isSuccess: false)
             updateFeatureSelection()
             return
         }
-        
+    
         guard let urlString = featureURLs[title], !urlString.isEmpty else {
             updateStatus("Lỗi: Không tìm thấy URL cho chức năng này.", isSuccess: false)
             return
         }
-        
+    
         isProcessing = true
         updateStatus("Đang tải và xử lý: \(title)...", isSuccess: false)
         activityIndicator.startAnimating()
-        
+    
         DownloadManager.shared.downloadAndInject(
             urlString: urlString,
             bundleID: selectedBundle,
@@ -484,7 +484,7 @@ class ViewController: UIViewController {
                 guard let self = self else { return }
                 self.isProcessing = false
                 self.activityIndicator.stopAnimating()
-                
+            
                 if success {
                     self.activeFeature = title
                     self.updateStatus("THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
