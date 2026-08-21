@@ -1,23 +1,33 @@
 name: IPAApp
 options:
-  bundleIdPrefix: com.dth
-  createIntermediateGroups: true
+  bundleIdPrefix: com.dts
+  deploymentTarget:
+    iOS: 13.0
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.dts.freefireth
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: ""
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGNING_ALLOWED: NO
 targets:
   IPAApp:
     type: application
     platform: iOS
-    deploymentTarget: "14.0"
     sources:
-      - path: IPAApp
-      - path: exploit
-      - path: kexploit
-    info:
-      path: IPAApp/Info.plist
+      - IPAApp
+      - exploit
+      - kexploit
+      - IPAApp/Stubs.m
     settings:
-      CODE_SIGNING_REQUIRED: NO
-      CODE_SIGN_IDENTITY: ""
-      CODE_SIGNING_ALLOWED: NO
-      SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
-      ENABLE_BITCODE: NO
-      SWIFT_VERSION: 5.0
-      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      base:
+        INFOPLIST_FILE: IPAApp/Info.plist
+        SWIFT_VERSION: 5.0
+        SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
+        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
+    dependencies:
+      - framework: libsqlite3.tbd
+      - framework: UIKit.framework
+      - framework: Foundation.framework
