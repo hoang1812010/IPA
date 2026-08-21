@@ -1,10 +1,11 @@
-name: Build iOS App with XcodeGen
+name: Build Unsigned IPA
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,24 +20,24 @@ jobs:
     - name: Generate Xcode project
       run: xcodegen generate
 
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-    - name: Build and Archive
+    - name: Build unsigned .app
       run: |
         xcodebuild -project IPAApp.xcodeproj \
                    -scheme IPAApp \
                    -configuration Release \
-                   -archivePath build/IPAApp.xcarchive \
-                   archive
-        xcodebuild -exportArchive \
-                   -archivePath build/IPAApp.xcarchive \
-                   -exportOptionsPlist ExportOptions.plist \
-                   -exportPath build/ \
-                   -allowProvisioningUpdates
+                   CODE_SIGN_IDENTITY="" \
+                   CODE_SIGNING_REQUIRED=NO \
+                   CODE_SIGNING_ALLOWED=NO \
+                   -derivedDataPath build
 
-    - name: Upload IPA
+    - name: Package .ipa
+      run: |
+        mkdir -p Payload
+        cp -r build/Build/Products/Release-iphoneos/IPAApp.app Payload/
+        zip -r IPAApp-Unsigned.ipa Payload/
+
+    - name: Upload unsigned IPA
       uses: actions/upload-artifact@v4
       with:
-        name: IPAApp
-        path: build/*.ipa
+        name: IPAApp-Unsigned
+        path: IPAApp-Unsigned.ipa
