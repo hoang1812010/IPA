@@ -1,4 +1,4 @@
-name: Build IPA Unsigned
+name: IPAApp
 
 on:
   push:
