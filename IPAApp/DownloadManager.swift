@@ -1,18 +1,15 @@
 import Foundation
 import UIKit
 
-@_silgen_name("kfp_write_file")
-func kfp_write_file(_ src: UnsafePointer<CChar>, _ dst: UnsafePointer<CChar>) -> Int32
-
 class DownloadManager: NSObject, URLSessionDownloadDelegate {
     static let shared = DownloadManager()
     private var completionHandlers: [Int: (Bool, String?, Error?) -> Void] = [:]
     private var taskBundleIDs: [Int: String] = [:]
-
+    
     func findContainerUUID(for bundleID: String) -> String? {
         let basePath = "/private/var/mobile/Containers/Data/Application/"
         guard let enumerator = FileManager.default.enumerator(atPath: basePath) else { return nil }
-
+        
         while let folderName = enumerator.nextObject() as? String {
             if folderName.contains("/") { continue }
             let plistPath = "\(basePath)\(folderName)/Info.plist"
@@ -54,12 +51,10 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
             }
             try FileManager.default.moveItem(at: location, to: destinationURL)
 
-            // Tìm UUID của ứng dụng dựa trên bundleID đã chọn
             guard let uuid = findContainerUUID(for: bundleID) else {
                 throw NSError(domain: "GameNotFound", code: -2, userInfo: [NSLocalizedDescriptionKey: "Game not found. Please open the game at least once."])
             }
 
-            // Đường dẫn target được xây dựng động với UUID tìm được
             let targetPath = "/private/var/mobile/Containers/Data/Application/\(uuid)/Documents/contentcache/Compulsory/ios/gameassetbundles/cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D"
             let sourcePath = destinationURL.path
 
