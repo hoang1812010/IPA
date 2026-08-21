@@ -1,31 +1,27 @@
-name: IPAApp
-options:
-  bundleIdPrefix: com.dts
-  deploymentTarget:
-    iOS: 13.0
-settings:
-  base:
-    PRODUCT_BUNDLE_IDENTIFIER: com.dts.freefireth
-    MARKETING_VERSION: 1.0
-    CURRENT_PROJECT_VERSION: 1
-    CODE_SIGN_STYLE: Manual
-    CODE_SIGN_IDENTITY: ""
-    CODE_SIGNING_REQUIRED: NO
-    CODE_SIGNING_ALLOWED: NO
-targets:
-  IPAApp:
-    type: application
-    platform: iOS
-    sources:
-      - IPAApp
-      - exploit
-      - kexploit
-    settings:
-      base:
-        INFOPLIST_FILE: IPAApp/Info.plist
-        SWIFT_VERSION: 5.0
-        SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
-    dependencies:
-      - framework: libsqlite3.tbd
-      - framework: UIKit.framework
-      - framework: Foundation.framework
+- name: Build Unsigned App
+        run: |
+          xcodebuild -project IPAApp.xcodeproj \
+            -scheme IPAApp \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath build \
+            build
+
+      - name: Package into IPA
+        run: |
+          # Tạo thư mục Payload chuẩn cấu trúc của iOS
+          mkdir -p Payload
+          
+          # Đưa file .app vừa build vào Payload
+          mv build/Build/Products/Release-iphoneos/IPAApp.app Payload/
+          
+          # Nén lại thành file .ipa
+          zip -qr IPAApp.ipa Payload
+          
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPAApp-Unsigned
+          path: IPAApp.ipa
