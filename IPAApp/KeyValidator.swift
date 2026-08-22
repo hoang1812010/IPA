@@ -3,7 +3,8 @@ import Foundation
 class KeyValidator {
     static let shared = KeyValidator()
     
-    private let apiURL = "https://key-server-api.dinhtienhoang1812010.workers.dev/api/client/validate"
+    // ĐÃ THÊM CHỮ 'static' ĐỂ HÀM STATIC VALIDATE CÓ THỂ SỬ DỤNG
+    private static let apiURL = "https://key-server-api.dinhtienhoang1812010.workers.dev/api/client/validate"
     
     static func validate(key: String, deviceId: String, completion: @escaping (Bool, String?) -> Void) {
         guard let url = URL(string: apiURL) else {
@@ -16,8 +17,10 @@ class KeyValidator {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         
+        // Gửi cả udid và deviceId để server dễ dàng nhận diện
         let body: [String: Any] = [
             "key": key,
+            "udid": deviceId,
             "deviceId": deviceId
         ]
         
@@ -46,7 +49,6 @@ class KeyValidator {
             do {
                 let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
                 
-                // Thử parse theo nhiều định dạng phổ biến
                 var isValid = false
                 var message: String? = nil
                 
