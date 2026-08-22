@@ -2,31 +2,23 @@ import UIKit
 
 class LoginViewController: UIViewController {
     
-    private let deviceId: String = {
-        let key = "Persistent_Device_UDID"
-        if let savedId = UserDefaults.standard.string(forKey: key) {
+    // Tự động sinh UDID giả (UUID) và lưu vĩnh viễn vào UserDefaults
+    private var deviceId: String {
+        let key = "Saved_UDID"
+        if let savedId = UserDefaults.standard.string(forKey: key), !savedId.isEmpty {
             return savedId
         } else {
-            // Tạo UUID chuẩn và lưu lại vĩnh viễn
             let newId = UUID().uuidString
-            UserDefaults.standard.set(newId, forKey: "Persistent_Device_UDID")
+            UserDefaults.standard.set(newId, forKey: key)
             return newId
         }
-    }()
+    }
     
     // MARK: - UI Elements
-    private let logoImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.image = UIImage(named: "iconapp") // Hoặc tên ảnh logo bạn có
-        iv.contentMode = .scaleAspectFit
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
-    }()
-    
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "KÍCH HOẠT THIẾT BỊ"
-        l.font = .systemFont(ofSize: 26, weight: .bold)
+        l.font = .systemFont(ofSize: 24, weight: .bold)
         l.textColor = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -35,8 +27,8 @@ class LoginViewController: UIViewController {
     
     private let subtitleLabel: UILabel = {
         let l = UILabel()
-        l.text = "Copy mã dưới đây gửi cho Admin để mua Key"
-        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.text = "Copy mã UDID dưới đây gửi Admin để mua Key"
+        l.font = .systemFont(ofSize: 13)
         l.textColor = .lightGray
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -46,20 +38,17 @@ class LoginViewController: UIViewController {
     private let udidContainer: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        v.layer.cornerRadius = 12
-        v.layer.borderWidth = 1
-        v.layer.borderColor = UIColor(white: 0.3, alpha: 1.0).cgColor
+        v.layer.cornerRadius = 10
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
     private let udidValueLabel: UILabel = {
         let l = UILabel()
-        l.font = .monospacedSystemFont(ofSize: 14, weight: .medium)
-        l.textColor = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
-        l.numberOfLines = 1
+        l.font = .monospacedSystemFont(ofSize: 13, weight: .medium)
+        l.textColor = .white
         l.adjustsFontSizeToFitWidth = true
-        l.minimumScaleFactor = 0.6
+        l.minimumScaleFactor = 0.5
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
@@ -68,35 +57,23 @@ class LoginViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("COPY", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
-        b.backgroundColor = UIColor(red: 0.0, green: 0.6, blue: 1.0, alpha: 1.0)
+        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .bold)
+        b.backgroundColor = UIColor.systemBlue
         b.layer.cornerRadius = 6
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
-    }()
-    
-    private let regenerateButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.setTitle("🔄 Tạo mã mới (nếu bị block)", for: .normal)
-        b.setTitleColor(.orange, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
     }()
     
     private let keyTextField: UITextField = {
         let tf = UITextField()
-        tf.placeholder = "Nhập Key kích hoạt tại đây..."
+        tf.placeholder = "Nhập Key kích hoạt..."
         tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
         tf.textColor = .white
         tf.layer.cornerRadius = 10
-        tf.layer.borderWidth = 1
-        tf.layer.borderColor = UIColor(white: 0.3, alpha: 1.0).cgColor
         tf.autocapitalizationType = .none
         tf.autocorrectionType = .no
         tf.font = .systemFont(ofSize: 15)
         tf.translatesAutoresizingMaskIntoConstraints = false
-        
         let padding = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 50))
         tf.leftView = padding
         tf.leftViewMode = .always
@@ -107,9 +84,9 @@ class LoginViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("KÍCH HOẠT", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         b.backgroundColor = UIColor(red: 0.0, green: 0.8, blue: 0.4, alpha: 1.0)
-        b.layer.cornerRadius = 12
+        b.layer.cornerRadius = 10
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
     }()
@@ -121,7 +98,6 @@ class LoginViewController: UIViewController {
         return ai
     }()
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 1.0)
@@ -130,26 +106,18 @@ class LoginViewController: UIViewController {
         setupActions()
     }
     
-    // MARK: - Setup
     private func setupUI() {
-        view.addSubview(logoImageView)
         view.addSubview(titleLabel)
         view.addSubview(subtitleLabel)
         view.addSubview(udidContainer)
         udidContainer.addSubview(udidValueLabel)
         udidContainer.addSubview(copyButton)
-        view.addSubview(regenerateButton)
         view.addSubview(keyTextField)
         view.addSubview(activateButton)
-        view.addSubview(activityIndicator)
+        activateButton.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
-            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
-            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 100),
-            logoImageView.heightAnchor.constraint(equalToConstant: 100),
-            
-            titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 20),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
@@ -158,29 +126,26 @@ class LoginViewController: UIViewController {
             udidContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
             udidContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             udidContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            udidContainer.heightAnchor.constraint(equalToConstant: 56),
+            udidContainer.heightAnchor.constraint(equalToConstant: 50),
             
             udidValueLabel.leadingAnchor.constraint(equalTo: udidContainer.leadingAnchor, constant: 16),
             udidValueLabel.centerYAnchor.constraint(equalTo: udidContainer.centerYAnchor),
-            udidValueLabel.trailingAnchor.constraint(equalTo: copyButton.leadingAnchor, constant: -8),
+            udidValueLabel.trailingAnchor.constraint(equalTo: copyButton.leadingAnchor, constant: -12),
             
             copyButton.trailingAnchor.constraint(equalTo: udidContainer.trailingAnchor, constant: -8),
             copyButton.centerYAnchor.constraint(equalTo: udidContainer.centerYAnchor),
-            copyButton.widthAnchor.constraint(equalToConstant: 70),
-            copyButton.heightAnchor.constraint(equalToConstant: 40),
+            copyButton.widthAnchor.constraint(equalToConstant: 60),
+            copyButton.heightAnchor.constraint(equalToConstant: 34),
             
-            regenerateButton.topAnchor.constraint(equalTo: udidContainer.bottomAnchor, constant: 8),
-            regenerateButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            keyTextField.topAnchor.constraint(equalTo: regenerateButton.bottomAnchor, constant: 24),
+            keyTextField.topAnchor.constraint(equalTo: udidContainer.bottomAnchor, constant: 24),
             keyTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             keyTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            keyTextField.heightAnchor.constraint(equalToConstant: 56),
+            keyTextField.heightAnchor.constraint(equalToConstant: 50),
             
             activateButton.topAnchor.constraint(equalTo: keyTextField.bottomAnchor, constant: 24),
             activateButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             activateButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            activateButton.heightAnchor.constraint(equalToConstant: 56),
+            activateButton.heightAnchor.constraint(equalToConstant: 50),
             
             activityIndicator.centerXAnchor.constraint(equalTo: activateButton.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: activateButton.centerYAnchor),
@@ -189,32 +154,12 @@ class LoginViewController: UIViewController {
     
     private func setupActions() {
         copyButton.addTarget(self, action: #selector(copyUdid), for: .touchUpInside)
-        regenerateButton.addTarget(self, action: #selector(regenerateUdid), for: .touchUpInside)
         activateButton.addTarget(self, action: #selector(activateTapped), for: .touchUpInside)
     }
     
-    // MARK: - Actions
     @objc private func copyUdid() {
         UIPasteboard.general.string = deviceId
-        showToast(message: "✅ Đã copy mã thiết bị!")
-    }
-    
-    @objc private func regenerateUdid() {
-        // Tạo lại UUID mới nếu key cũ bị block
-        let newId = UUID().uuidString
-        UserDefaults.standard.set(newId, forKey: "Persistent_Device_UDID")
-        // Dùng hack nhỏ để cập nhật lại property (vì nó là let)
-        // Ta sẽ load lại viewController
-        let alert = UIAlertController(title: "Đã tạo mã mới", message: "Vui lòng copy mã mới này gửi Admin để cấp key mới. App sẽ tải lại...", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first {
-                let newVC = LoginViewController()
-                window.rootViewController = newVC
-                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
-            }
-        }))
-        present(alert, animated: true)
+        showToast(message: "✅ Đã copy UDID!")
     }
     
     @objc private func activateTapped() {
@@ -224,19 +169,22 @@ class LoginViewController: UIViewController {
         }
         
         activityIndicator.startAnimating()
+        activateButton.setTitle("", for: .normal)
         activateButton.isEnabled = false
         
+        // Gọi API Validate
         KeyValidator.validate(key: key, deviceId: deviceId) { [weak self] success, message in
             DispatchQueue.main.async {
                 self?.activityIndicator.stopAnimating()
+                self?.activateButton.setTitle("KÍCH HOẠT", for: .normal)
                 self?.activateButton.isEnabled = true
                 
                 if success {
-                    // Lưu trạng thái đã active
+                    // Lưu trạng thái Active
                     UserDefaults.standard.set(true, forKey: "App_Activated")
                     UserDefaults.standard.set(key, forKey: "Saved_Key")
                     
-                    // Chuyển sang màn hình chính
+                    // Chuyển Scene sang ViewController
                     if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                        let window = windowScene.windows.first {
                         let mainVC = ViewController()
@@ -245,16 +193,16 @@ class LoginViewController: UIViewController {
                         UIView.transition(with: window, duration: 0.4, options: .transitionFlipFromRight, animations: nil)
                     }
                 } else {
-                    self?.showAlert(title: "Kích hoạt thất bại", message: message ?? "Key không hợp lệ hoặc sai mã thiết bị.")
+                    self?.showAlert(title: "Thất bại", message: message ?? "Key sai hoặc chưa được cấp phép cho UDID này.")
                 }
             }
         }
     }
     
     // MARK: - Helpers
-    private func showAlert(title: String, message: String) {
+    private func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completion?() })
         present(alert, animated: true)
     }
     
@@ -268,12 +216,11 @@ class LoginViewController: UIViewController {
         toastLabel.clipsToBounds = true
         toastLabel.font = .systemFont(ofSize: 14, weight: .medium)
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
-        
         view.addSubview(toastLabel)
         NSLayoutConstraint.activate([
             toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             toastLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-            toastLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+            toastLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 150),
             toastLabel.heightAnchor.constraint(equalToConstant: 40)
         ])
         toastLabel.alpha = 0
