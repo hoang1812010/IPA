@@ -484,38 +484,28 @@ class ViewController: UIViewController {
         DownloadManager.shared.downloadAndInject(
             urlString: urlString,
             bundleID: selectedBundle,
-            fileName: "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D",
-            progressHandler: { [weak self] progress in
-                DispatchQueue.main.async {
-                    let percent = Int(progress * 100)
-                    self?.updateStatus("Đang tải: \(percent)% - Đang xử lý exploit...", isSuccess: false)
-                }
-            }
+            fileName: "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D"
         ) { [weak self] success, message, error in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.isProcessing = false
                 self.activityIndicator.stopAnimating()
 
-                if success {
-                    self.activeFeature = title
-                    self.updateStatus("✅ THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
-                    self.updateFeatureSelection()
-                    
-                    // Hiển thị thông báo thành công
-                    self.showSuccessAlert(message: message ?? "Inject thành công!")
-                } else {
-                    self.activeFeature = nil
-                    let errorMsg = error?.localizedDescription ?? "Không xác định"
-                    self.updateStatus("❌ Lỗi: \(errorMsg)", isSuccess: false)
-                    self.updateFeatureSelection()
-                    
-                    // Hiển thị thông báo lỗi
-                    self.showErrorAlert(message: errorMsg)
-                }
+            if success {
+                self.activeFeature = title
+                self.updateStatus("✅ THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
+                self.updateFeatureSelection()
+                self.showSuccessAlert(message: message ?? "Inject thành công!")
+            } else {
+                self.activeFeature = nil
+                let errorMsg = error?.localizedDescription ?? "Không xác định"
+                self.updateStatus("❌ Lỗi: \(errorMsg)", isSuccess: false)
+                self.updateFeatureSelection()
+                self.showErrorAlert(message: errorMsg)
             }
-        }    
+        }
     }
+}
     
     private func showSuccessAlert(message: String) {
         let alert = UIAlertController(
