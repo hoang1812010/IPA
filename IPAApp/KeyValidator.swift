@@ -5,7 +5,7 @@ class KeyValidator {
     
     private let apiURL = "https://key-server-api.dinhtienhoang1812010.workers.dev/api/client/validate"
     
-    func validate(key: String, deviceId: String, completion: @escaping (Bool, String?) -> Void) {
+    static func validate(key: String, deviceId: String, completion: @escaping (Bool, String?) -> Void) {
         guard let url = URL(string: apiURL) else {
             completion(false, "Invalid API URL")
             return
