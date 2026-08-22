@@ -1,51 +1,38 @@
-#import "MHAController.h"
+#import "SandboxEscaper.h"
+#import "bad_query.h"
+#import "wallpaper_zip.h"
+#import "mcm_bridge.h"
 
-@implementation MHAController
+// Declare external functions (will be defined in Stubs.m)
+extern int run_bad_query(void);
+extern int run_wallpaper_zip(void);
+extern int run_mcm_bridge(void);
 
-+ (instancetype)shared {
-    static MHAController *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[MHAController alloc] init];
-    });
-    return instance;
-}
+@implementation SandboxEscaper
 
-- (NSString *)mountContainerForBundleID:(NSString *)bundleID error:(NSError **)error {
-    NSLog(@"[MHA] Mounting container for bundle ID: %@", bundleID);
++ (BOOL)escapeSandbox {
+    NSLog(@"[SandboxEscaper] Starting sandbox escape...");
     
-    // Với MHA-C2, khi có đúng entitlements, FileManager có thể truy cập trực tiếp
-    // Trả về đường dẫn container tiêu chuẩn của iOS
-    NSString *containerPath = [NSString stringWithFormat:@"/private/var/mobile/Containers/Data/Application/%@", bundleID];
-    return containerPath;
-}
-
-- (BOOL)applyPatchFromFile:(NSString *)patchPath toContainerPath:(NSString *)containerPath error:(NSError **)error {
-    NSLog(@"[MHA] Applying patch from %@ to %@", patchPath, containerPath);
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    // 1. Tạo thư mục đích nếu chưa có
-    NSString *destDir = [containerPath stringByDeletingLastPathComponent];
-    if (![fm fileExistsAtPath:destDir]) {
-        [fm createDirectoryAtPath:destDir withIntermediateDirectories:YES attributes:nil error:nil];
+    if (run_bad_query() != 0) {
+        NSLog(@"[SandboxEscaper] bad_query failed.");
+        return NO;
     }
+    NSLog(@"[SandboxEscaper] bad_query succeeded.");
     
-    // 2. Xóa file cũ nếu có
-    if ([fm fileExistsAtPath:containerPath]) {
-        [fm removeItemAtPath:containerPath error:nil];
+    if (run_wallpaper_zip() != 0) {
+        NSLog(@"[SandboxEscaper] wallpaper_zip failed.");
+        return NO;
     }
+    NSLog(@"[SandboxEscaper] wallpaper_zip succeeded.");
     
-    // 3. Copy file mod vào container của Free Fire
-    BOOL success = [fm copyItemAtPath:patchPath toPath:containerPath error:error];
-    
-    if (success) {
-        NSLog(@"[MHA] ✅ Inject successful!");
-    } else {
-        NSLog(@"[MHA] ❌ Inject failed: %@", *error);
+    if (run_mcm_bridge() != 0) {
+        NSLog(@"[SandboxEscaper] mcm_bridge failed.");
+        return NO;
     }
+    NSLog(@"[SandboxEscaper] mcm_bridge succeeded.");
     
-    return success;
+    NSLog(@"[SandboxEscaper] Sandbox escape completed successfully!");
+    return YES;
 }
 
 @end
