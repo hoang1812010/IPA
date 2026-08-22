@@ -43,23 +43,25 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
     func findContainerUUID(for bundleID: String) -> String? {
         print("[DownloadManager] 🔍 Tìm container cho: \(bundleID)")
     
-        // Dùng MCM API để tìm container path
-        guard let containerPath = ExploitManager.findContainerPath(for: bundleID) else {
-            print("[DownloadManager] ❌ Không tìm thấy container")
+        // Dùng MCM API (giống 3105)
+        var error: NSString?
+        guard let containerPath = MCMActivateContainerPath(1, bundleID, false, &error) else {
+            print("[DownloadManager] ❌ MCM thất bại: \(error?.description ?? "unknown")")
             return nil
         }
     
+        print("[DownloadManager] ✅ MCM trả về: \(containerPath)")
+    
         // Trích xuất UUID từ path
         let components = containerPath.components(separatedBy: "/")
-        if let appIndex = components.firstIndex(of: "Application"),
-           appIndex + 1 < components.count {
-            let uuid = components[appIndex + 1]
-            print("[DownloadManager] ✅ Tìm thấy UUID: \(uuid)")
-            return uuid
+        guard let appIndex = components.firstIndex(of: "Application"),
+              appIndex + 1 < components.count else {
+            return nil
         }
     
-        print("[DownloadManager] ❌ Không trích xuất được UUID")
-        return nil
+        let uuid = components[appIndex + 1]
+        print("[DownloadManager] ✅ UUID: \(uuid)")
+        return uuid
     }
     
     /// Fallback: Tìm UUID bằng cách quét filesystem
