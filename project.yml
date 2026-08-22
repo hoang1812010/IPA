@@ -1,36 +1,74 @@
 name: IPAApp
 options:
-  bundleIdPrefix: com.dts
+  bundleIdPrefix: com.apple
   deploymentTarget:
-    iOS: 14.0
+    iOS: 14.0  # Nâng lên 14.0 để hỗ trợ pwritev/preadv của exploit
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
 settings:
   base:
-    PRODUCT_BUNDLE_IDENTIFIER: com.apple.mobile.MobileHouseArrest
-    MARKETING_VERSION: 1.0
+    PRODUCT_BUNDLE_IDENTIFIER: com.apple.mobile.MobileHouseArrest  # BẮT BUỘC cho MHA-C2
+    PRODUCT_NAME: MobileHouseArrest
+    MARKETING_VERSION: 1.1.0
     CURRENT_PROJECT_VERSION: 1
     CODE_SIGN_STYLE: Manual
     CODE_SIGN_IDENTITY: ""
-    CODE_SIGNING_REQUIRED: NO
-    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+    DEVELOPMENT_TEAM: ""
+
 targets:
   IPAApp:
     type: application
     platform: iOS
     sources:
-      - IPAApp
-      - exploit
-      - kexploit
-      - IPAApp/Stubs.m
+      - path: IPAApp
+        excludes:
+          - "**/.DS_Store"
+      - path: exploit
+        excludes:
+          - "**/.DS_Store"
+      - path: kexploit
+        excludes:
+          - "**/.DS_Store"
+    
     settings:
       base:
         INFOPLIST_FILE: IPAApp/Info.plist
         SWIFT_VERSION: 5.0
         SWIFT_OBJC_BRIDGING_HEADER: IPAApp/IPAApp-Bridging-Header.h
+        CODE_SIGN_ENTITLEMENTS: IPAApp/IPAApp.entitlements
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
+        ENABLE_BITCODE: "NO"
+        TARGETED_DEVICE_FAMILY: "1,2"  # iPhone + iPad
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CLANG_ENABLE_MODULES: "YES"
+        CLANG_ENABLE_OBJC_ARC: "YES"
+    
     dependencies:
       - framework: libsqlite3.tbd
-        embed: false
+        embed: false  # System library - KHÔNG embed
       - framework: UIKit.framework
-        embed: false
+        embed: false  # System framework - KHÔNG embed
       - framework: Foundation.framework
+        embed: false  # System framework - KHÔNG embed
+      - framework: Security.framework
         embed: false
+      - framework: SystemConfiguration.framework
+        embed: false
+      - framework: MobileCoreServices.framework
+        embed: false
+      - framework: CoreServices.framework
+        embed: false
+      - framework: CoreFoundation.framework
+        embed: false
+      - framework: IOKit.framework
+        embed: false
+
+    preBuildScripts:
+      - script: |
+          echo "Starting build for MobileHouseArrest (MHA-C2 mode)"
+          echo "Bundle ID: com.apple.mobile.MobileHouseArrest"
+        name: "Build Info"
