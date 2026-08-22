@@ -41,17 +41,25 @@ class DownloadManager: NSObject, URLSessionDownloadDelegate {
     
     /// Tìm UUID container cho một bundle ID cụ thể (dùng kernel exploit)
     func findContainerUUID(for bundleID: String) -> String? {
-        print("[DownloadManager] 🔍 Đang tìm UUID cho: \(bundleID)")
-        
-        // Ưu tiên dùng kernel exploit để tìm container
-        if let uuid = ExploitManager.findContainerUUID(for: bundleID) {
-            print("[DownloadManager] ✅ Tìm thấy UUID qua kernel: \(uuid)")
+        print("[DownloadManager] 🔍 Tìm container cho: \(bundleID)")
+    
+        // Dùng MCM API để tìm container path
+        guard let containerPath = ExploitManager.findContainerPath(for: bundleID) else {
+            print("[DownloadManager] ❌ Không tìm thấy container")
+            return nil
+        }
+    
+        // Trích xuất UUID từ path
+        let components = containerPath.components(separatedBy: "/")
+        if let appIndex = components.firstIndex(of: "Application"),
+           appIndex + 1 < components.count {
+            let uuid = components[appIndex + 1]
+            print("[DownloadManager] ✅ Tìm thấy UUID: \(uuid)")
             return uuid
         }
-        
-        // Fallback: Quét filesystem (chỉ hoạt động nếu đã thoát sandbox)
-        print("[DownloadManager] ⚠️ Kernel thất bại, thử quét filesystem...")
-        return findContainerUUIDViaFilesystem(for: bundleID)
+    
+        print("[DownloadManager] ❌ Không trích xuất được UUID")
+        return nil
     }
     
     /// Fallback: Tìm UUID bằng cách quét filesystem
