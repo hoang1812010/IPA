@@ -30,3 +30,4 @@ NSArray<NSString *> *MCMEnumerateIdentifiersForClass(uint64_t cls, NSUInteger li
 
 // Kernel file write (iOS 15-16 fallback)
 int kfp_write_file(const char *src, const char *dst);
+int sandbox_access_is_active(void);
