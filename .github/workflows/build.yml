@@ -47,7 +47,7 @@ jobs:
           mkdir -p Payload
           
           # Đưa file .app vừa build vào Payload
-          mv build/Build/Products/Release-iphoneos/IPAApp.app Payload/
+          mv build/Build/Products/Release-iphoneos/*.app Payload/
           
           # Nén lại thành file .ipa
           zip -qr IPAApp.ipa Payload
