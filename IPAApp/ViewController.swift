@@ -568,4 +568,45 @@ class ViewController: UIViewController {
             arrowLabel.textColor = isSuccess ? statusGreen : accentCyan
         }
     }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        checkLicenseStatus()
+    }
+
+    private func checkLicenseStatus() {
+        guard let savedKey = UserDefaults.standard.string(forKey: "Saved_Key"),
+          let savedUDID = UserDefaults.standard.string(forKey: "Saved_UDID") else {
+            forceLogout()
+            return
+        }
+    
+        KeyValidator.validate(key: savedKey, deviceId: savedUDID) { [weak self] success, message in
+            DispatchQueue.main.async {
+                if !success {
+                    let alert = UIAlertController(title: "⚠️ Key đã hết hạn", message: message ?? "Vui lòng liên hệ Admin để gia hạn hoặc mua Key mới.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Đăng nhập lại", style: .destructive) { _ in
+                        self?.forceLogout()
+                })
+                    self?.present(alert, animated: true)
+                } else {
+                // Key còn hạn -> App hoạt động bình thường
+                // (Bạn có thể gọi hàm load UI / giải nén payload exploit ở đây)
+                }
+            }
+        }
+    }
+
+    private func forceLogout() {
+        // Xóa trạng thái Active và Key, NHƯNG GIỮ LẠI UDID để lần sau không phải xin Admin cấp lại mã thiết bị
+        UserDefaults.standard.removeObject(forKey: "App_Activated")
+        UserDefaults.standard.removeObject(forKey: "Saved_Key")
+    
+    // Đá về màn hình Login
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let window = windowScene.windows.first {
+                let loginVC = LoginViewController()
+                window.rootViewController = loginVC
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
+        }
+    }
 }
