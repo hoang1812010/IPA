@@ -2,274 +2,284 @@ import UIKit
 
 class LoginViewController: UIViewController {
     
-    private let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? "NODE:0x8A7F4C"
+    private let deviceId: String = {
+        let key = "Persistent_Device_UDID"
+        if let savedId = UserDefaults.standard.string(forKey: key) {
+            return savedId
+        } else {
+            // Tạo UUID chuẩn và lưu lại vĩnh viễn
+            let newId = UUID().uuidString
+            UserDefaults.standard.set(newId, forKey: "Persistent_Device_UDID")
+            return newId
+        }
+    }()
     
-    // UI Elements
-    private let backgroundView = UIView()
-    private let ambientGlow = UIView()
+    // MARK: - UI Elements
+    private let logoImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(named: "iconapp") // Hoặc tên ảnh logo bạn có
+        iv.contentMode = .scaleAspectFit
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
     
-    private let logoImageView = UIImageView()
-    private let titleLabel = UILabel()
-    private let subtitleLabel = UILabel()
+    private let titleLabel: UILabel = {
+        let l = UILabel()
+        l.text = "KÍCH HOẠT THIẾT BỊ"
+        l.font = .systemFont(ofSize: 26, weight: .bold)
+        l.textColor = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
     
-    private let udidTitleLabel = UILabel()
-    private let udidValueLabel = UILabel()
-    private let copyButton = UIButton(type: .system)
-    private let udidContainer = UIView()
+    private let subtitleLabel: UILabel = {
+        let l = UILabel()
+        l.text = "Copy mã dưới đây gửi cho Admin để mua Key"
+        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.textColor = .lightGray
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
     
-    private let keyTitleLabel = UILabel()
-    private let keyTextField = UITextField()
+    private let udidContainer: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
+        v.layer.cornerRadius = 12
+        v.layer.borderWidth = 1
+        v.layer.borderColor = UIColor(white: 0.3, alpha: 1.0).cgColor
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
     
-    private let errorLabel = UILabel()
-    private let submitButton = UIButton(type: .system)
+    private let udidValueLabel: UILabel = {
+        let l = UILabel()
+        l.font = .monospacedSystemFont(ofSize: 14, weight: .medium)
+        l.textColor = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
+        l.numberOfLines = 1
+        l.adjustsFontSizeToFitWidth = true
+        l.minimumScaleFactor = 0.6
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
     
+    private let copyButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("COPY", for: .normal)
+        b.setTitleColor(.white, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
+        b.backgroundColor = UIColor(red: 0.0, green: 0.6, blue: 1.0, alpha: 1.0)
+        b.layer.cornerRadius = 6
+        b.translatesAutoresizingMaskIntoConstraints = false
+        return b
+    }()
+    
+    private let regenerateButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("🔄 Tạo mã mới (nếu bị block)", for: .normal)
+        b.setTitleColor(.orange, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        return b
+    }()
+    
+    private let keyTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Nhập Key kích hoạt tại đây..."
+        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
+        tf.textColor = .white
+        tf.layer.cornerRadius = 10
+        tf.layer.borderWidth = 1
+        tf.layer.borderColor = UIColor(white: 0.3, alpha: 1.0).cgColor
+        tf.autocapitalizationType = .none
+        tf.autocorrectionType = .no
+        tf.font = .systemFont(ofSize: 15)
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        
+        let padding = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 50))
+        tf.leftView = padding
+        tf.leftViewMode = .always
+        return tf
+    }()
+    
+    private let activateButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("KÍCH HOẠT", for: .normal)
+        b.setTitleColor(.white, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        b.backgroundColor = UIColor(red: 0.0, green: 0.8, blue: 0.4, alpha: 1.0)
+        b.layer.cornerRadius = 12
+        b.translatesAutoresizingMaskIntoConstraints = false
+        return b
+    }()
+    
+    private let activityIndicator: UIActivityIndicatorView = {
+        let ai = UIActivityIndicatorView(style: .medium)
+        ai.hidesWhenStopped = true
+        ai.translatesAutoresizingMaskIntoConstraints = false
+        return ai
+    }()
+    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-        setupConstraints()
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    @objc private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-    private func setupUI() {
-        // Colors
-        let bgColor = UIColor(red: 0.02, green: 0.02, blue: 0.03, alpha: 1.0)
-        let surfaceColor = UIColor.white.withAlphaComponent(0.03)
-        let borderColor = UIColor.white.withAlphaComponent(0.06).cgColor
-        let accentCyan = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0)
-        let textSecondary = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0)
-        
-        view.backgroundColor = bgColor
-        
-        ambientGlow.backgroundColor = accentCyan.withAlphaComponent(0.15)
-        ambientGlow.layer.cornerRadius = 150
-        ambientGlow.layer.shadowColor = accentCyan.cgColor
-        ambientGlow.layer.shadowRadius = 80
-        ambientGlow.layer.shadowOpacity = 1
-        view.addSubview(ambientGlow)
-        
-        if let icon = UIImage(named: "iconapp") {
-            logoImageView.image = icon
-        } else {
-            logoImageView.image = UIImage(systemName: "shield.righthalf.filled")
-            logoImageView.tintColor = accentCyan
-        }
-        logoImageView.contentMode = .scaleAspectFill
-        logoImageView.layer.cornerRadius = 20
-        logoImageView.clipsToBounds = true
-        logoImageView.layer.shadowColor = accentCyan.cgColor
-        logoImageView.layer.shadowRadius = 15
-        logoImageView.layer.shadowOpacity = 0.4
-        view.addSubview(logoImageView)
-        
-        titleLabel.text = "Cheat VN"
-        titleLabel.font = .systemFont(ofSize: 32, weight: .heavy)
-        titleLabel.textColor = .white
-        titleLabel.textAlignment = .center
-        view.addSubview(titleLabel)
-        
-        subtitleLabel.text = "CỔNG BẢO MẬT HỆ THỐNG"
-        subtitleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
-        subtitleLabel.textColor = textSecondary
-        subtitleLabel.textAlignment = .center
-        let attributedString = NSMutableAttributedString(string: "CỔNG BẢO MẬT HỆ THỐNG")
-        attributedString.addAttribute(NSAttributedString.Key.kern, value: 2.0, range: NSRange(location: 0, length: attributedString.length))
-        subtitleLabel.attributedText = attributedString
-        view.addSubview(subtitleLabel)
-        
-        // UDID Section
-        udidTitleLabel.text = "MÃ THIẾT BỊ (UDID)"
-        udidTitleLabel.font = .systemFont(ofSize: 11, weight: .bold)
-        udidTitleLabel.textColor = textSecondary
-        
-        udidContainer.backgroundColor = surfaceColor
-        udidContainer.layer.cornerRadius = 16
-        udidContainer.layer.borderWidth = 1
-        udidContainer.layer.borderColor = borderColor
-        
+        view.backgroundColor = UIColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 1.0)
         udidValueLabel.text = deviceId
-        udidValueLabel.font = .monospacedSystemFont(ofSize: 14, weight: .medium)
-        udidValueLabel.textColor = accentCyan
-        udidValueLabel.lineBreakMode = .byTruncatingMiddle
-        
-        copyButton.setImage(UIImage(systemName: "doc.on.doc"), for: .normal)
-        copyButton.tintColor = textSecondary
-        copyButton.addTarget(self, action: #selector(copyUdid), for: .touchUpInside)
-        
+        setupUI()
+        setupActions()
+    }
+    
+    // MARK: - Setup
+    private func setupUI() {
+        view.addSubview(logoImageView)
+        view.addSubview(titleLabel)
+        view.addSubview(subtitleLabel)
+        view.addSubview(udidContainer)
         udidContainer.addSubview(udidValueLabel)
         udidContainer.addSubview(copyButton)
-        view.addSubview(udidTitleLabel)
-        view.addSubview(udidContainer)
-        
-        // Key Section
-        keyTitleLabel.text = "MÃ KÍCH HOẠT (KEY)"
-        keyTitleLabel.font = .systemFont(ofSize: 11, weight: .bold)
-        keyTitleLabel.textColor = textSecondary
-        
-        keyTextField.placeholder = "Nhập mã kích hoạt của bạn..."
-        keyTextField.font = .monospacedSystemFont(ofSize: 15, weight: .medium)
-        keyTextField.textColor = .white
-        keyTextField.backgroundColor = surfaceColor
-        keyTextField.layer.cornerRadius = 16
-        keyTextField.layer.borderWidth = 1
-        keyTextField.layer.borderColor = borderColor
-        keyTextField.autocapitalizationType = .allCharacters
-        keyTextField.autocorrectionType = .no
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: keyTextField.frame.height))
-        keyTextField.leftView = paddingView
-        keyTextField.leftViewMode = .always
-        keyTextField.rightView = paddingView
-        keyTextField.rightViewMode = .always
-        keyTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        
-        view.addSubview(keyTitleLabel)
+        view.addSubview(regenerateButton)
         view.addSubview(keyTextField)
-        
-        // Error Label
-        errorLabel.textColor = .systemRed
-        errorLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        errorLabel.textAlignment = .center
-        errorLabel.numberOfLines = 0
-        view.addSubview(errorLabel)
-        
-        // Submit Button
-        submitButton.setTitle("KÍCH HOẠT HỆ THỐNG", for: .normal)
-        submitButton.titleLabel?.font = .systemFont(ofSize: 15, weight: .bold)
-        submitButton.setTitleColor(.black, for: .normal)
-        submitButton.layer.cornerRadius = 16
-        submitButton.layer.shadowColor = accentCyan.cgColor
-        submitButton.layer.shadowRadius = 10
-        submitButton.layer.shadowOffset = CGSize(width: 0, height: 5)
-        submitButton.layer.shadowOpacity = 0.2
-        submitButton.addTarget(self, action: #selector(activateKey), for: .touchUpInside)
-        updateSubmitButtonState()
-        
-        view.addSubview(submitButton)
-    }
-    
-    private func setupConstraints() {
-        // Disable autoresizing mask
-        [ambientGlow, logoImageView, titleLabel, subtitleLabel, udidTitleLabel, udidContainer, udidValueLabel, copyButton, keyTitleLabel, keyTextField, errorLabel, submitButton].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-        }
+        view.addSubview(activateButton)
+        view.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
-            ambientGlow.widthAnchor.constraint(equalToConstant: 300),
-            ambientGlow.heightAnchor.constraint(equalToConstant: 300),
-            ambientGlow.centerXAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
-            ambientGlow.centerYAnchor.constraint(equalTo: view.topAnchor, constant: 50),
-            
-            logoImageView.widthAnchor.constraint(equalToConstant: 80),
-            logoImageView.heightAnchor.constraint(equalToConstant: 80),
+            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
             logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.bottomAnchor.constraint(equalTo: titleLabel.topAnchor, constant: -12),
+            logoImageView.widthAnchor.constraint(equalToConstant: 100),
+            logoImageView.heightAnchor.constraint(equalToConstant: 100),
             
+            titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 20),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -4),
             
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: udidTitleLabel.topAnchor, constant: -40),
             
-            udidTitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            udidTitleLabel.bottomAnchor.constraint(equalTo: udidContainer.topAnchor, constant: -8),
-            
+            udidContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
             udidContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             udidContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             udidContainer.heightAnchor.constraint(equalToConstant: 56),
-            udidContainer.bottomAnchor.constraint(equalTo: keyTitleLabel.topAnchor, constant: -24),
             
             udidValueLabel.leadingAnchor.constraint(equalTo: udidContainer.leadingAnchor, constant: 16),
             udidValueLabel.centerYAnchor.constraint(equalTo: udidContainer.centerYAnchor),
             udidValueLabel.trailingAnchor.constraint(equalTo: copyButton.leadingAnchor, constant: -8),
             
-            copyButton.trailingAnchor.constraint(equalTo: udidContainer.trailingAnchor, constant: -16),
+            copyButton.trailingAnchor.constraint(equalTo: udidContainer.trailingAnchor, constant: -8),
             copyButton.centerYAnchor.constraint(equalTo: udidContainer.centerYAnchor),
-            copyButton.widthAnchor.constraint(equalToConstant: 24),
-            copyButton.heightAnchor.constraint(equalToConstant: 24),
+            copyButton.widthAnchor.constraint(equalToConstant: 70),
+            copyButton.heightAnchor.constraint(equalToConstant: 40),
             
-            keyTitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            keyTitleLabel.bottomAnchor.constraint(equalTo: keyTextField.topAnchor, constant: -8),
+            regenerateButton.topAnchor.constraint(equalTo: udidContainer.bottomAnchor, constant: 8),
+            regenerateButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
+            keyTextField.topAnchor.constraint(equalTo: regenerateButton.bottomAnchor, constant: 24),
             keyTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             keyTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             keyTextField.heightAnchor.constraint(equalToConstant: 56),
-            keyTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 50), // Center roughly around here
             
-            errorLabel.topAnchor.constraint(equalTo: keyTextField.bottomAnchor, constant: 16),
-            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            activateButton.topAnchor.constraint(equalTo: keyTextField.bottomAnchor, constant: 24),
+            activateButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            activateButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            activateButton.heightAnchor.constraint(equalToConstant: 56),
             
-            submitButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 16),
-            submitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            submitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            submitButton.heightAnchor.constraint(equalToConstant: 56)
+            activityIndicator.centerXAnchor.constraint(equalTo: activateButton.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: activateButton.centerYAnchor),
         ])
-        
-        // Add Gradient to submit button
-        DispatchQueue.main.async {
-            let gradient = CAGradientLayer()
-            gradient.frame = self.submitButton.bounds
-            gradient.colors = [
-                UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 1.0).cgColor,
-                UIColor(red: 0.3, green: 0.67, blue: 1.0, alpha: 1.0).cgColor
-            ]
-            gradient.startPoint = CGPoint(x: 0, y: 0)
-            gradient.endPoint = CGPoint(x: 1, y: 1)
-            gradient.cornerRadius = 16
-            
-            if let oldLayer = self.submitButton.layer.sublayers?.first(where: { $0 is CAGradientLayer }) {
-                oldLayer.removeFromSuperlayer()
+    }
+    
+    private func setupActions() {
+        copyButton.addTarget(self, action: #selector(copyUdid), for: .touchUpInside)
+        regenerateButton.addTarget(self, action: #selector(regenerateUdid), for: .touchUpInside)
+        activateButton.addTarget(self, action: #selector(activateTapped), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    @objc private func copyUdid() {
+        UIPasteboard.general.string = deviceId
+        showToast(message: "✅ Đã copy mã thiết bị!")
+    }
+    
+    @objc private func regenerateUdid() {
+        // Tạo lại UUID mới nếu key cũ bị block
+        let newId = UUID().uuidString
+        UserDefaults.standard.set(newId, forKey: "Persistent_Device_UDID")
+        // Dùng hack nhỏ để cập nhật lại property (vì nó là let)
+        // Ta sẽ load lại viewController
+        let alert = UIAlertController(title: "Đã tạo mã mới", message: "Vui lòng copy mã mới này gửi Admin để cấp key mới. App sẽ tải lại...", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                let newVC = LoginViewController()
+                window.rootViewController = newVC
+                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
             }
-            self.submitButton.layer.insertSublayer(gradient, at: 0)
+        }))
+        present(alert, animated: true)
+    }
+    
+    @objc private func activateTapped() {
+        guard let key = keyTextField.text, !key.trimmingCharacters(in: .whitespaces).isEmpty else {
+            showAlert(title: "Lỗi", message: "Vui lòng nhập Key!")
+            return
+        }
+        
+        activityIndicator.startAnimating()
+        activateButton.isEnabled = false
+        
+        KeyValidator.validate(key: key, deviceId: deviceId) { [weak self] success, message in
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
+                self?.activateButton.isEnabled = true
+                
+                if success {
+                    // Lưu trạng thái đã active
+                    UserDefaults.standard.set(true, forKey: "App_Activated")
+                    UserDefaults.standard.set(key, forKey: "Saved_Key")
+                    
+                    // Chuyển sang màn hình chính
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let window = windowScene.windows.first {
+                        let mainVC = ViewController()
+                        let nav = UINavigationController(rootViewController: mainVC)
+                        window.rootViewController = nav
+                        UIView.transition(with: window, duration: 0.4, options: .transitionFlipFromRight, animations: nil)
+                    }
+                } else {
+                    self?.showAlert(title: "Kích hoạt thất bại", message: message ?? "Key không hợp lệ hoặc sai mã thiết bị.")
+                }
+            }
         }
     }
     
-    @objc private func copyUdid() {
-        UIPasteboard.general.string = deviceId
+    // MARK: - Helpers
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
-    @objc private func textFieldDidChange() {
-        updateSubmitButtonState()
-        errorLabel.text = ""
+    private func showToast(message: String) {
+        let toastLabel = UILabel()
+        toastLabel.text = message
+        toastLabel.textColor = .white
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastLabel.textAlignment = .center
+        toastLabel.layer.cornerRadius = 10
+        toastLabel.clipsToBounds = true
+        toastLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let borderColor = UIColor.white.withAlphaComponent(0.06).cgColor
-        let accentCyan = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 0.5).cgColor
-        keyTextField.layer.borderColor = (keyTextField.text?.isEmpty ?? true) ? borderColor : accentCyan
-    }
-    
-    private func updateSubmitButtonState() {
-        let hasText = !(keyTextField.text?.isEmpty ?? true)
-        submitButton.isEnabled = hasText
-        submitButton.alpha = hasText ? 1.0 : 0.7
-    }
-    
-    @objc private func activateKey() {
-        guard let key = keyTextField.text, !key.isEmpty else { return }
-        
-        submitButton.isEnabled = false
-        submitButton.setTitle("ĐANG XÁC THỰC...", for: .normal)
-        errorLabel.text = ""
-        
-        KeyValidator.shared.validate(key: key, deviceId: deviceId) { [weak self] isValid, message in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.submitButton.setTitle("KÍCH HOẠT HỆ THỐNG", for: .normal)
-                self.updateSubmitButtonState()
-                
-                if isValid {
-                    let mainVC = ViewController()
-                    mainVC.apiKey = key
-                    mainVC.modalPresentationStyle = .fullScreen
-                    mainVC.modalTransitionStyle = .crossDissolve
-                    self.present(mainVC, animated: true)
-                } else {
-                    self.errorLabel.text = message ?? "Mã kích hoạt không hợp lệ"
-                }
+        view.addSubview(toastLabel)
+        NSLayoutConstraint.activate([
+            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
+            toastLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+            toastLabel.heightAnchor.constraint(equalToConstant: 40)
+        ])
+        toastLabel.alpha = 0
+        UIView.animate(withDuration: 0.3, animations: { toastLabel.alpha = 1 }) { _ in
+            UIView.animate(withDuration: 0.3, delay: 1.5, options: .curveEaseOut, animations: { toastLabel.alpha = 0 }) { _ in
+                toastLabel.removeFromSuperview()
             }
         }
     }
