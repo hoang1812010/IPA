@@ -17,9 +17,3 @@ int run_mcm_bridge(void) {
     NSLog(@"[Stubs] run_mcm_bridge called (stub - no-op)");
     return 0; // Success
 }
-
-// Stub for kernel write (used by ExploitManager for iOS 15-16)
-int kfp_write_file(const char *src, const char *dst) {
-    NSLog(@"[Stubs] kfp_write_file called (stub - no-op)");
-    return 0; // Success
-}
