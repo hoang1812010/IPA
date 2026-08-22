@@ -480,10 +480,17 @@ class ViewController: UIViewController {
         updateStatus("Đang tải và xử lý: \(title)...", isSuccess: false)
         activityIndicator.startAnimating()
 
+        // Sử dụng DownloadManager với progress handler
         DownloadManager.shared.downloadAndInject(
             urlString: urlString,
             bundleID: selectedBundle,
-            fileName: "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D"
+            fileName: "cache_res.CfnFf59sr1SbsqQ6JqTKsEusjKs~3D",
+            progressHandler: { [weak self] progress in
+                DispatchQueue.main.async {
+                    let percent = Int(progress * 100)
+                    self?.updateStatus("Đang tải: \(percent)% - Đang xử lý exploit...", isSuccess: false)
+                }
+            }
         ) { [weak self] success, message, error in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -492,15 +499,42 @@ class ViewController: UIViewController {
 
                 if success {
                     self.activeFeature = title
-                    self.updateStatus("THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
+                    self.updateStatus("✅ THÀNH CÔNG: Đã bật \(title).", isSuccess: true)
                     self.updateFeatureSelection()
+                    
+                    // Hiển thị thông báo thành công
+                    self.showSuccessAlert(message: message ?? "Inject thành công!")
                 } else {
                     self.activeFeature = nil
-                    self.updateStatus("Lỗi: \(error?.localizedDescription ?? "Không xác định")", isSuccess: false)
+                    let errorMsg = error?.localizedDescription ?? "Không xác định"
+                    self.updateStatus("❌ Lỗi: \(errorMsg)", isSuccess: false)
                     self.updateFeatureSelection()
+                    
+                    // Hiển thị thông báo lỗi
+                    self.showErrorAlert(message: errorMsg)
                 }
             }
         }    
+    }
+    
+    private func showSuccessAlert(message: String) {
+        let alert = UIAlertController(
+            title: "✅ Thành công",
+            message: "\(message)\n\nVui lòng khởi động lại game để áp dụng thay đổi.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(
+            title: "❌ Lỗi",
+            message: "\(message)\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Đóng", style: .cancel))
+        present(alert, animated: true)
     }
     
     private func updateBundleSelection() {
@@ -568,6 +602,7 @@ class ViewController: UIViewController {
             arrowLabel.textColor = isSuccess ? statusGreen : accentCyan
         }
     }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         checkLicenseStatus()
@@ -575,7 +610,7 @@ class ViewController: UIViewController {
 
     private func checkLicenseStatus() {
         guard let savedKey = UserDefaults.standard.string(forKey: "Saved_Key"),
-          let savedUDID = UserDefaults.standard.string(forKey: "Saved_UDID") else {
+              let savedUDID = UserDefaults.standard.string(forKey: "Saved_UDID") else {
             forceLogout()
             return
         }
@@ -583,14 +618,18 @@ class ViewController: UIViewController {
         KeyValidator.validate(key: savedKey, deviceId: savedUDID) { [weak self] success, message in
             DispatchQueue.main.async {
                 if !success {
-                    let alert = UIAlertController(title: "⚠️ Key đã hết hạn", message: message ?? "Vui lòng liên hệ Admin để gia hạn hoặc mua Key mới.", preferredStyle: .alert)
+                    let alert = UIAlertController(
+                        title: "⚠️ Key đã hết hạn",
+                        message: message ?? "Vui lòng liên hệ Admin để gia hạn hoặc mua Key mới.",
+                        preferredStyle: .alert
+                    )
                     alert.addAction(UIAlertAction(title: "Đăng nhập lại", style: .destructive) { _ in
                         self?.forceLogout()
-                })
+                    })
                     self?.present(alert, animated: true)
                 } else {
-                // Key còn hạn -> App hoạt động bình thường
-                // (Bạn có thể gọi hàm load UI / giải nén payload exploit ở đây)
+                    // Key còn hạn -> App hoạt động bình thường
+                    self?.updateStatus("✅ Key hợp lệ. Sẵn sàng sử dụng.", isSuccess: true)
                 }
             }
         }
@@ -601,11 +640,11 @@ class ViewController: UIViewController {
         UserDefaults.standard.removeObject(forKey: "App_Activated")
         UserDefaults.standard.removeObject(forKey: "Saved_Key")
     
-    // Đá về màn hình Login
+        // Đá về màn hình Login
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-            let window = windowScene.windows.first {
-                let loginVC = LoginViewController()
-                window.rootViewController = loginVC
+           let window = windowScene.windows.first {
+            let loginVC = LoginViewController()
+            window.rootViewController = loginVC
             UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
         }
     }
