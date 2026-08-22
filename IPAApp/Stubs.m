@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 
+// Stub implementations for exploit functions
 int run_bad_query(void) {
     NSLog(@"[Stubs] run_bad_query called (stub - no-op)");
     return 0;
