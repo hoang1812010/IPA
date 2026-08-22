@@ -4,7 +4,7 @@ options:
   deploymentTarget:
     iOS: 14.0
   xcodeVersion: "15.0"
-  
+
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.apple.mobile.MobileHouseArrest
@@ -25,14 +25,14 @@ targets:
       - path: IPAApp
         excludes:
           - "**/.DS_Store"
-          - "**/Stubs.m"  # ← ĐÃ THÊM: Loại bỏ Stubs.m
+          # ← ĐÃ XÓA: "- **/Stubs.m" - Bây giờ Stubs.m SẼ được compile
       - path: exploit
         excludes:
           - "**/.DS_Store"
       - path: kexploit
         excludes:
           - "**/.DS_Store"
-    
+
     settings:
       base:
         INFOPLIST_FILE: IPAApp/Info.plist
@@ -45,7 +45,7 @@ targets:
         CLANG_ENABLE_MODULES: "YES"
         CLANG_ENABLE_OBJC_ARC: "YES"
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) COCOAPODS=1"
-    
+
     dependencies:
       - framework: libsqlite3.tbd
         embed: false
