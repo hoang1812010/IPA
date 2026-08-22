@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+// Import exploit headers
 #import "mcm_bridge.h"
 #import "vnode.h"
 #import "krw.h"
@@ -12,16 +13,15 @@
 #import "sandbox_escape.h"
 
 // Kernel exploit functions
-int kexploit_init(void);
-int kfp_write_file(const char *src, const char *dst);
-int32_t kexploit_find_container(const char *bundleID, char *uuidBuffer, int32_t bufferSize);
+int kexploit_opa334(void);
+uint64_t proc_self(void);
 
 // Sandbox escape functions
-BOOL escapeSandbox(void);
 int sandbox_escape(uint64_t self_proc);
 int sandbox_elevate_to_root(uint64_t self_proc);
 
-// MCM bridge functions
+// MCM bridge functions (giống 3105)
 NSString *MCMActivateContainerPath(uint64_t cls, NSString *identifier, BOOL group, NSString **error);
 NSString *MCMContainerPathForIdentifier(uint64_t cls, NSString *identifier, BOOL group, NSString **error);
 BOOL MCMBridgeAvailable(void);
+NSArray<NSString *> *MCMEnumerateIdentifiersForClass(uint64_t cls, NSUInteger limit, NSString **error);
