@@ -4,6 +4,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <sys/stat.h>              // ← THÊM DÒNG NÀY cho struct stat
 
 // Import exploit headers
 #import "mcm_bridge.h"
